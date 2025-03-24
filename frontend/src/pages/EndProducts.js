@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import AddEnd from "../components/AddEnd"; // Import AddEnd instead of AddProduct
-import UpdateProduct from "../components/UpdateProduct";
 import AuthContext from "../AuthContext";
 
 function EndProducts() {
@@ -41,9 +40,9 @@ function EndProducts() {
       const rowData = [
         product._id,
         product.name,
-        product.manufacturer,
+        product.category,
         product.price,
-        product.stock,
+        product.quantity,
         product.value,
       ];
       tableRows.push(rowData);
@@ -102,9 +101,9 @@ function EndProducts() {
                 <tr key={product._id}>
                   <td className="px-4 py-2">{product._id}</td>
                   <td className="px-4 py-2">{product.name}</td>
-                  <td className="px-4 py-2">{product.manufacturer}</td>
+                  <td className="px-4 py-2">{product.category}</td>
                   <td className="px-4 py-2">{product.price}</td>
-                  <td className="px-4 py-2">{product.stock}</td>
+                  <td className="px-4 py-2">{product.quantity}</td>
                   <td className="px-4 py-2">{product.value}</td>
                   <td className="px-4 py-2 flex gap-2">
                     <button 

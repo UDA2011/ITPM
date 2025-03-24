@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import AddProduct from "../components/AddProduct";
-import UpdateProduct from "../components/UpdateProduct";
 import AuthContext from "../AuthContext";
 
 function Inventory() {

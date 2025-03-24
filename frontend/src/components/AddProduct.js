@@ -11,22 +11,39 @@ export default function AddProduct() {
     category: "",
     price: "",
     quantity: "",
-    value: ""
+    value: "",
   });
 
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
   const handleInputChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // Validation for price, quantity, and value
+    if (name === "price" || name === "quantity" || name === "value") {
+      if (value < 0) {
+        alert(`${name} cannot be negative`);
+        return;
+      }
+    }
+
+    setForm({ ...form, [name]: value });
   };
 
   const addProduct = async () => {
     try {
       console.log("Form Data:", form);
 
+      // Check if all fields are filled
       if (!form.productname || !form.category || !form.price || !form.quantity || !form.value) {
         alert("Please fill out all fields");
+        return;
+      }
+
+      // Check if price, quantity, and value are positive
+      if (form.price <= 0 || form.quantity <= 0 || form.value <= 0) {
+        alert("Price, Quantity, and Value must be positive numbers");
         return;
       }
 
@@ -78,18 +95,19 @@ export default function AddProduct() {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              {/* Increase the size of the modal */}
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl h-auto">
+                <div className="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
                   <div className="sm:flex sm:items-start">
                     <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
                       <PlusIcon className="h-6 w-6 text-blue-400" aria-hidden="true" />
                     </div>
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                      <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
-                        Add Product
+                      <Dialog.Title as="h3" className="text-2xl font-semibold leading-6 text-gray-900">
+                        Add Raw Material
                       </Dialog.Title>
                       <form>
-                        <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                        <div className="grid gap-6 mb-6 sm:grid-cols-2 mt-6">
                           <div>
                             <label htmlFor="productname" className="block mb-2 text-sm font-medium text-gray-900">
                               Raw Material Name
@@ -119,7 +137,9 @@ export default function AddProduct() {
                             >
                               <option value="">Select a category</option>
                               <option value="Excipients">Excipients</option>
-                              <option value="Active Pharmaceutical Ingredients">Active Pharmaceutical Ingredients</option>
+                              <option value="Active Pharmaceutical Ingredients">
+                                Active Pharmaceutical Ingredients
+                              </option>
                               <option value="Solvents & Diluents">Solvents & Diluents</option>
                               <option value="Additives & Enhancers">Additives & Enhancers</option>
                               <option value="Other">Other</option>
@@ -174,6 +194,24 @@ export default function AddProduct() {
                       </form>
                     </div>
                   </div>
+                </div>
+                {/* Buttons */}
+                <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse sm:px-8">
+                  <button
+                    type="button"
+                    className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                    onClick={addProduct}
+                  >
+                    Add Product
+                  </button>
+                  <button
+                    type="button"
+                    className="mt-3 inline-flex justify-center rounded-md bg-white px-6 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    onClick={() => setOpen(false)}
+                    ref={cancelButtonRef}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </Dialog.Panel>
             </Transition.Child>

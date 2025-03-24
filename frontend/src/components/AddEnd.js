@@ -3,7 +3,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../AuthContext";
 
-export default function AddStore() {
+export default function AddEnd() {
   const authContext = useContext(AuthContext);
 
   const [form, setForm] = useState({
@@ -16,6 +16,8 @@ export default function AddStore() {
   });
 
   const [open, setOpen] = useState(false); // Set to false initially
+  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [error, setError] = useState(""); // Error message state
   const cancelButtonRef = useRef(null);
 
   const handleInputChange = (e) => {
@@ -24,19 +26,44 @@ export default function AddStore() {
     // Validation for price, quantity, and value
     if (name === "price" || name === "quantity" || name === "value") {
       if (value < 0) {
-        alert(`${name} cannot be negative`);
+        setError(`${name} cannot be negative`);
         return;
       }
     }
 
     setForm({ ...form, [name]: value });
+    setError(""); // Clear error on input change
   };
 
-  const addProduct = async () => {
-    try {
-      console.log("Form Data:", form);
+  const resetForm = () => {
+    setForm({
+      userID: authContext.user?._id || "",
+      productname: "",
+      category: "",
+      price: "",
+      quantity: "",
+      value: "",
+    });
+  };
 
-      const response = await fetch("http://localhost:4000/api/addproduct/add", {
+  const addEndProduct = async () => {
+    try {
+      // Check if all fields are filled
+      if (!form.productname || !form.category || !form.price || !form.quantity || !form.value) {
+        setError("Please fill out all fields");
+        return;
+      }
+
+      // Check if price, quantity, and value are positive
+      if (form.price <= 0 || form.quantity <= 0 || form.value <= 0) {
+        setError("Price, Quantity, and Value must be positive numbers");
+        return;
+      }
+
+      setIsLoading(true); // Set loading state
+      setError(""); // Clear any previous errors
+
+      const response = await fetch("http://localhost:4000/api/addendproduct/add", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
@@ -47,14 +74,17 @@ export default function AddStore() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Failed to add product");
+        throw new Error(result.error || "Failed to add end product");
       }
 
-      alert("Product Added Successfully");
+      alert("End Product Added Successfully");
       setOpen(false);
+      resetForm(); // Reset form after successful submission
     } catch (error) {
-      console.error("Error adding product:", error);
-      alert(error.message || "Error adding product. Please try again.");
+      console.error("Error adding end product:", error);
+      setError(error.message || "Error adding end product. Please try again.");
+    } finally {
+      setIsLoading(false); // Reset loading state
     }
   };
 
@@ -66,7 +96,7 @@ export default function AddStore() {
         className="inline-flex justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-500"
         onClick={() => setOpen(true)}
       >
-        Add Product
+        Add End Product
       </button>
 
       <Transition.Root show={open} as={Fragment}>
@@ -94,21 +124,27 @@ export default function AddStore() {
                 leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                 leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               >
-                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                  <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                {/* Increase the size of the modal */}
+                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                  <div className="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
                     <div className="sm:flex sm:items-start">
                       <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
                         <PlusIcon className="h-6 w-6 text-blue-400" aria-hidden="true" />
                       </div>
                       <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                        <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
-                          Add Product
+                        <Dialog.Title as="h3" className="text-2xl font-semibold leading-6 text-gray-900">
+                          Add End Product
                         </Dialog.Title>
+                        {error && (
+                          <div className="mt-2 text-sm text-red-600">
+                            {error}
+                          </div>
+                        )}
                         <form>
-                          <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                          <div className="grid gap-6 mb-6 sm:grid-cols-2 mt-6">
                             <div>
                               <label htmlFor="productname" className="block mb-2 text-sm font-medium text-gray-900">
-                                Raw Material Name
+                                End Product Name
                               </label>
                               <input
                                 type="text"
@@ -117,7 +153,7 @@ export default function AddStore() {
                                 value={form.productname}
                                 onChange={handleInputChange}
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                                placeholder="Enter Raw Material Name"
+                                placeholder="Enter End Product Name"
                                 required
                               />
                             </div>
@@ -147,11 +183,11 @@ export default function AddStore() {
                                 value={form.category}
                                 onChange={handleInputChange}
                               >
-                                <option value="Groceries">Antibiotics</option>
-                                <option value="Electronics">Antiparasitics</option>
-                                <option value="Wholesale">Pain Relievers</option>
-                                <option value="SuperMart">Vitamins</option>
-                                <option value="Phones">Other</option>
+                                <option value="">Select a category</option>
+                                <option value="Antibiotics">Antibiotics</option>
+                                <option value="Antiparasitics">Antiparasitics</option>
+                                <option value="Pain Relievers">Pain Relievers</option>
+                                <option value="Vitamins">Vitamins</option>                             
                               </select>
                             </div>
                             <div>
@@ -190,17 +226,18 @@ export default function AddStore() {
                     </div>
                   </div>
                   {/* Button container */}
-                  <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                  <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse sm:px-8">
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
-                      onClick={addProduct}
+                      className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                      onClick={addEndProduct}
+                      disabled={isLoading} // Disable button during loading
                     >
-                      Add Product
+                      {isLoading ? "Adding..." : "Add End Product"}
                     </button>
                     <button
                       type="button"
-                      className="mt-3 inline-flex justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                      className="mt-3 inline-flex justify-center rounded-md bg-white px-6 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                       onClick={() => setOpen(false)}
                       ref={cancelButtonRef}
                     >
