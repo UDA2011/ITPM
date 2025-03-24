@@ -44,11 +44,11 @@ function SideMenu() {
             <span className="text-sm font-medium"> Purchase Details</span>
           </Link>
           <Link
-            to="/sales"
+            to="/Supplies"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
           >
-            <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
-            <span className="text-sm font-medium"> Sales</span>
+            <img alt="sale-icon" src={require("../assets/icons8-supplies-48.png")} />
+            <span className="text-sm font-medium"> Suplier</span>
           </Link>
 
           
