@@ -1,19 +1,17 @@
 import { Fragment, useRef, useState, useContext } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
-import UploadImage from "./UploadImage";
 import AuthContext from "../AuthContext";
 
-export default function AddStore() {
+export default function AddProduct() {
   const authContext = useContext(AuthContext);
 
   const [form, setForm] = useState({
-    userID: authContext.user?._id || "", // Ensure userID is correctly set
     productname: "",
     category: "",
-    description: "",
     price: "",
-    image: "",
+    quantity: "",
+    value: ""
   });
 
   const [open, setOpen] = useState(true);
@@ -25,7 +23,12 @@ export default function AddStore() {
 
   const addProduct = async () => {
     try {
-      console.log("Form Data:", form); // Log form data before sending
+      console.log("Form Data:", form);
+
+      if (!form.productname || !form.category || !form.price || !form.quantity || !form.value) {
+        alert("Please fill out all fields");
+        return;
+      }
 
       const response = await fetch("http://localhost:4000/api/addproduct/add", {
         method: "POST",
@@ -46,26 +49,6 @@ export default function AddStore() {
     } catch (error) {
       console.error("Error adding product:", error);
       alert(error.message || "Error adding product. Please try again.");
-    }
-  };
-
-  const uploadImage = async (image) => {
-    const data = new FormData();
-    data.append("file", image);
-    data.append("upload_preset", "inventoryapp");
-
-    try {
-      const response = await fetch("https://api.cloudinary.com/v1_1/ddhayhptm/image/upload", {
-        method: "POST",
-        body: data,
-      });
-
-      const result = await response.json();
-      setForm({ ...form, image: result.url });
-      alert("Product Image Successfully Uploaded");
-    } catch (error) {
-      console.error("Image Upload Error:", error);
-      alert("Failed to upload image");
     }
   };
 
@@ -101,15 +84,15 @@ export default function AddStore() {
                     <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
                       <PlusIcon className="h-6 w-6 text-blue-400" aria-hidden="true" />
                     </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left ">
-                      <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900 ">
+                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                      <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
                         Add Product
                       </Dialog.Title>
                       <form>
                         <div className="grid gap-4 mb-4 sm:grid-cols-2">
                           <div>
                             <label htmlFor="productname" className="block mb-2 text-sm font-medium text-gray-900">
-                              Product Name
+                              Raw Material Name
                             </label>
                             <input
                               type="text"
@@ -118,9 +101,29 @@ export default function AddStore() {
                               value={form.productname}
                               onChange={handleInputChange}
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              placeholder="Enter Product Name"
+                              placeholder="Enter Raw Material Name"
                               required
                             />
+                          </div>
+                          <div>
+                            <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900">
+                              Category
+                            </label>
+                            <select
+                              id="category"
+                              name="category"
+                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
+                              value={form.category}
+                              onChange={handleInputChange}
+                              required
+                            >
+                              <option value="">Select a category</option>
+                              <option value="Excipients">Excipients</option>
+                              <option value="Active Pharmaceutical Ingredients">Active Pharmaceutical Ingredients</option>
+                              <option value="Solvents & Diluents">Solvents & Diluents</option>
+                              <option value="Additives & Enhancers">Additives & Enhancers</option>
+                              <option value="Other">Other</option>
+                            </select>
                           </div>
                           <div>
                             <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900">
@@ -138,62 +141,39 @@ export default function AddStore() {
                             />
                           </div>
                           <div>
-                            <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900">
-                              Category
+                            <label htmlFor="quantity" className="block mb-2 text-sm font-medium text-gray-900">
+                              Quantity
                             </label>
-                            <select
-                              id="category"
-                              name="category"
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
-                              value={form.category}
+                            <input
+                              type="number"
+                              name="quantity"
+                              id="quantity"
+                              value={form.quantity}
                               onChange={handleInputChange}
-                            >
-                              <option value="Electronics">Mineral miser</option>
-                              <option value="Groceries">Shampoo</option>
-                              <option value="Wholesale"> Cow </option>
-                              <option value="SuperMart"> HEN </option>
-                              <option value="Phones"> anther</option>
-                            </select>
-                          </div>
-                          <div className="sm:col-span-2">
-                            <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900">
-                              Description
-                            </label>
-                            <textarea
-                              id="description"
-                              name="description"
-                              rows="5"
-                              className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500"
-                              placeholder="Write a description..."
-                              value={form.description}
-                              onChange={handleInputChange}
+                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                              placeholder="Enter Quantity"
                               required
-                            ></textarea>
+                            />
                           </div>
-                        </div>
-                        <div>
-                          <UploadImage uploadImage={uploadImage} />
+                          <div>
+                            <label htmlFor="value" className="block mb-2 text-sm font-medium text-gray-900">
+                              Value
+                            </label>
+                            <input
+                              type="number"
+                              name="value"
+                              id="value"
+                              value={form.value}
+                              onChange={handleInputChange}
+                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                              placeholder="Enter Value"
+                              required
+                            />
+                          </div>
                         </div>
                       </form>
                     </div>
                   </div>
-                </div>
-                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                  <button
-                    type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
-                    onClick={addProduct}
-                  >
-                    Add Product
-                  </button>
-                  <button
-                    type="button"
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                    onClick={() => setOpen(false)}
-                    ref={cancelButtonRef}
-                  >
-                    Cancel
-                  </button>
                 </div>
               </Dialog.Panel>
             </Transition.Child>
