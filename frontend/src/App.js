@@ -11,7 +11,7 @@ import AuthContext from "./AuthContext";
 import ProtectedWrapper from "./ProtectedWrapper";
 import { useEffect, useState } from "react";
 import Addproduct from "./pages/Add product";
-import Sales from "./pages/Sales";
+import Supplies from "./pages/supplies";
 import PurchaseDetails from "./pages/PurchaseDetails";
 
 const App = () => {
@@ -74,7 +74,7 @@ const App = () => {
             <Route index element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/purchase-details" element={<PurchaseDetails />} />
-            <Route path="/sales" element={<Sales />} />
+            <Route path="/Supplies" element={<Supplies />} />
             <Route path="/Addproduct" element={<Addproduct />} />
           </Route>
           <Route path="*" element={<NoPageFound />} />
