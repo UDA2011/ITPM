@@ -1,9 +1,9 @@
 const express = require("express");
-const { main } = require("./models/index");
+const { main } = require("./models/index"); // Import the main function
 const productRoute = require("./router/product");
 const addProductRoute = require("./router/Addproduct");
 const purchaseRoute = require("./router/purchase");
-const salesRoute = require("./router/sales");
+const supplierRoutes = require("./router/SupplierRoute");
 const cors = require("cors");
 const User = require("./models/users");
 const Product = require("./models/Product");
@@ -12,21 +12,18 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const PORT = 4000;
 
-main();
+// Connect to MongoDB
+main().catch((err) => console.error("MongoDB connection error:", err));
+
+// Middleware
 app.use(express.json());
 app.use(cors());
 
-// Store API
+// Routes
 app.use("/api/addproduct", addProductRoute);
-
-// Products API
 app.use("/api/product", productRoute);
-
-// Purchase API
 app.use("/api/purchase", purchaseRoute);
-
-// Sales API
-app.use("/api/sales", salesRoute);
+app.use("/api/suppliers", supplierRoutes);
 
 // ------------- Login --------------
 app.post("/api/login", async (req, res) => {
