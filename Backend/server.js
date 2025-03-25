@@ -6,7 +6,6 @@ const purchaseRoute = require("./router/purchase");
 const supplierRoutes = require("./router/SupplierRoute");
 const cors = require("cors");
 const User = require("./models/users");
-const Product = require("./models/Product");
 const jwt = require("jsonwebtoken");
 
 const app = express();
