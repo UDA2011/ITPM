@@ -82,7 +82,6 @@ function EndProducts() {
           {/* Render AddEnd modal instead of AddProduct */}
           {showProductModal && <AddEnd closeModal={() => setShowProductModal(false)} />}
 
-          {showUpdateModal && <UpdateProduct product={updateProduct} closeModal={() => setShowUpdateModal(false)} />}
 
           <table className="min-w-full divide-y-2 divide-gray-200 text-sm">
             <thead>

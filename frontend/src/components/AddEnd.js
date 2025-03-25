@@ -22,6 +22,7 @@ export default function AddEnd() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
 
     // Validation for price, quantity, and value
     if (name === "price" || name === "quantity" || name === "value") {
@@ -63,7 +64,7 @@ export default function AddEnd() {
       setIsLoading(true); // Set loading state
       setError(""); // Clear any previous errors
 
-      const response = await fetch("http://localhost:4000/api/addendproduct/add", {
+      const response = await fetch("http://localhost:4000/api/addend/add", {
         method: "POST",
         headers: {
           "Content-type": "application/json",

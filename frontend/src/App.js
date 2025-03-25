@@ -14,8 +14,6 @@ import DeleteRaw from "./pages/DeleteRaw";
 import AuthContext from "./AuthContext";
 import ProtectedWrapper from "./ProtectedWrapper";
 import { useEffect, useState } from "react";
-import Sales from "./pages/Sales";
-import Addproduct from "./pages/Add product";
 import Supplies from "./pages/supplies";
 import PurchaseDetails from "./pages/PurchaseDetails";
 
@@ -79,13 +77,11 @@ const App = () => {
             <Route index element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/purchase-details" element={<PurchaseDetails />} />
-            <Route path="/sales" element={<Sales />} />
             <Route path="/EndProducts" element={<EndProducts />} />
             <Route path="/ViewProduct/:id" element={<ViewProduct />} />
             <Route path="/edit-raw/:productId" element={<EditRaw />} />
             <Route path="/delete-raw/:productId" element={<DeleteRaw />} />
             <Route path="/Supplies" element={<Supplies />} />
-            <Route path="/Addproduct" element={<Addproduct />} />
           </Route>
           <Route path="*" element={<NoPageFound />} />
         </Routes>
