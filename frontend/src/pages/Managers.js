@@ -1,86 +1,90 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import AuthContext from "../AuthContext";
 
 function Managers() {
-  const [managers, setManagers] = useState([
-    { id: 1, name: "John Doe", position: "HR Manager", email: "john@example.com" },
-    { id: 2, name: "Jane Smith", position: "Finance Manager", email: "jane@example.com" },
-  ]);
+  const [employees, setAllEmployeeData] = useState([]);
+  const [updatePage, setUpdatePage] = useState(true);
+  const authContext = useContext(AuthContext);
+  const navigate = useNavigate(); // Initialize navigate function
 
-  const [editManager, setEditManager] = useState(null);
+  useEffect(() => {
+    fetchEmployeeData();
+  }, [updatePage]);
 
-  // Delete a manager
-  const deleteManager = (id) => {
-    setManagers(managers.filter((m) => m.id !== id));
+  // Fetching Data of All Employees
+  const fetchEmployeeData = () => {
+    fetch(`http://localhost:4000/api/employee/get/${authContext.user}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setAllEmployeeData(data);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  // Handle Page Update
+  const handlePageUpdate = () => {
+    setUpdatePage(!updatePage);
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6 text-gray-700">MANAGERS DETAILS</h1>
-
-      {/* Table Container */}
-      <div className="overflow-hidden rounded-lg shadow-md">
-        <table className="min-w-full border border-gray-300 bg-white">
-          <thead className="bg-gray-200 text-gray-700 text-lg">
-            <tr>
-              <th className="border px-6 py-4 text-left">Name</th>
-              <th className="border px-6 py-4 text-left">Position</th>
-              <th className="border px-6 py-4 text-left">Email</th>
-              <th className="border px-6 py-4 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {managers.map((manager, index) => (
-              <tr key={manager.id} className="even:bg-gray-100 hover:bg-gray-200">
-                <td className="border px-6 py-4">{manager.name}</td>
-                <td className="border px-6 py-4">{manager.position}</td>
-                <td className="border px-6 py-4">{manager.email}</td>
-                <td className="border px-6 py-4 text-center">
-                  <button
-                    onClick={() => setEditManager(manager)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md mr-3 hover:bg-blue-700"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => deleteManager(manager.id)}
-                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
-                </td>
+    <div className="col-span-12 lg:col-span-10 flex justify-center">
+      <div className="flex flex-col gap-5 w-11/12">
+        {/* Table */}
+        <div className="overflow-x-auto rounded-lg border bg-white border-gray-200">
+          <div className="flex justify-between pt-5 pb-3 px-3">
+            <div className="flex gap-4">
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 text-xs rounded"
+                onClick={() => navigate("/register")} // Navigate to Register page
+              >
+                Add Employee
+              </button>
+            </div>
+          </div>
+          <table className="min-w-full divide-y-2 divide-gray-200 text-sm">
+            <thead>
+              <tr>
+                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
+                  Employee Name
+                </th>
+                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
+                  Position
+                </th>
+                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
+                  Contact Number
+                </th>
+                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
+                  Joining Date
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Edit Manager Form */}
-      {editManager && (
-        <div className="mt-6 bg-gray-50 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4 text-gray-700">Edit Manager</h2>
-          <input
-            type="text"
-            value={editManager.name}
-            onChange={(e) => setEditManager({ ...editManager, name: e.target.value })}
-            className="border p-3 m-2 w-full rounded"
-          />
-          <input
-            type="text"
-            value={editManager.position}
-            onChange={(e) => setEditManager({ ...editManager, position: e.target.value })}
-            className="border p-3 m-2 w-full rounded"
-          />
-          <input
-            type="email"
-            value={editManager.email}
-            onChange={(e) => setEditManager({ ...editManager, email: e.target.value })}
-            className="border p-3 m-2 w-full rounded"
-          />
-          <button onClick={() => setEditManager(null)} className="bg-gray-500 text-white px-5 py-3 rounded-lg">
-            Cancel
-          </button>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {employees.map((employee) => {
+                return (
+                  <tr key={employee._id}>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-900">
+                      {employee.name}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                      {employee.position}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                      {employee.contactNumber}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                      {new Date(employee.joiningDate).toLocaleDateString() ===
+                      new Date().toLocaleDateString()
+                        ? "Today"
+                        : employee.joiningDate}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
   );
 }

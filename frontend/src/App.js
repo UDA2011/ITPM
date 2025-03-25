@@ -67,7 +67,6 @@ const App = () => {
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/purchase-details" element={<PurchaseDetails />} />
             <Route path="/sales" element={<Sales />} />
-            
             <Route path="/Employee" element={<Employee />} />
             <Route path="/Employee/Managers" element={<Managers />} />
             <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
@@ -80,5 +79,3 @@ const App = () => {
 };
 
 export default App;
-
-//<Route path="/Addproduct" element={<Addproduct />} />
