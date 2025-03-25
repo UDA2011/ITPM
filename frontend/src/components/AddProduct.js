@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState, useContext } from "react";
+import { Fragment, useRef, useState, useContext, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../AuthContext";
@@ -16,9 +16,20 @@ export default function AddProduct() {
 
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
+  const [error, setError] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Validation for raw material name (only letters allowed)
+    if (name === "productname") {
+      const letterPattern = /^[A-Za-z\s]+$/; // Only allows letters and spaces
+      if (!letterPattern.test(value) && value !== "") {
+        setError("Raw Material Name can only contain letters and spaces.");
+      } else {
+        setError(""); // Clear error if valid input
+      }
+    }
 
     // Validation for price, quantity, and value
     if (name === "price" || name === "quantity" || name === "value") {
@@ -26,10 +37,24 @@ export default function AddProduct() {
         alert(`${name} cannot be negative`);
         return;
       }
+      if (value.length > 6) {
+        alert(`${name} cannot exceed 6 digits`);
+        return;
+      }
     }
 
     setForm({ ...form, [name]: value });
   };
+
+  // Auto-calculate value whenever price or quantity changes
+  useEffect(() => {
+    if (form.price && form.quantity) {
+      setForm((prevForm) => ({
+        ...prevForm,
+        value: (parseFloat(form.price) * parseFloat(form.quantity)).toFixed(2),
+      }));
+    }
+  }, [form.price, form.quantity]);
 
   const addProduct = async () => {
     try {
@@ -47,7 +72,7 @@ export default function AddProduct() {
         return;
       }
 
-      const response = await fetch("http://localhost:4000/api/addproduct/add", {
+      const response = await fetch("http://localhost:4000/api/inventory", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
@@ -95,8 +120,7 @@ export default function AddProduct() {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              {/* Increase the size of the modal */}
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl h-auto">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:h-auto">
                 <div className="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
                   <div className="sm:flex sm:items-start">
                     <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -122,6 +146,9 @@ export default function AddProduct() {
                               placeholder="Enter Raw Material Name"
                               required
                             />
+                            {error && (
+                              <p className="mt-2 text-sm text-red-600">{error}</p>
+                            )}
                           </div>
                           <div>
                             <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900">
@@ -141,8 +168,7 @@ export default function AddProduct() {
                                 Active Pharmaceutical Ingredients
                               </option>
                               <option value="Solvents & Diluents">Solvents & Diluents</option>
-                              <option value="Additives & Enhancers">Additives & Enhancers</option>
-                              <option value="Other">Other</option>
+                              <option value="Additives & Enhancers">Additives & Enhancers</option>                            
                             </select>
                           </div>
                           <div>
@@ -177,7 +203,7 @@ export default function AddProduct() {
                           </div>
                           <div>
                             <label htmlFor="value" className="block mb-2 text-sm font-medium text-gray-900">
-                              Value
+                              Value (Auto-calculated)
                             </label>
                             <input
                               type="number"
@@ -186,8 +212,8 @@ export default function AddProduct() {
                               value={form.value}
                               onChange={handleInputChange}
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              placeholder="Enter Value"
-                              required
+                              placeholder="Value will be auto-calculated"
+                              disabled
                             />
                           </div>
                         </div>

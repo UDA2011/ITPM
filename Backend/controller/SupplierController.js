@@ -1,6 +1,5 @@
 const mongoose = require("mongoose"); // Import mongoose
 const Supplier = require("../models/Supplier");
-const Product = require("../models/Product");
 const nodemailer = require("nodemailer");
 
 // Get all suppliers

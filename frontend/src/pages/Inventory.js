@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import AddProduct from "../components/AddProduct";
+import EditRaw from "../components/EditRaw";
 import AuthContext from "../AuthContext";
 
 function Inventory() {
@@ -22,7 +23,7 @@ function Inventory() {
   }, [updatePage, selectedSection]);
 
   const fetchProductsData = () => {
-    fetch(`http://localhost:4000/api/product/get/${authContext.user}?section=${selectedSection}`)
+    fetch(`http://localhost:4000/api/inventory`)
       .then((response) => response.json())
       .then((data) => {
         setAllProducts(data);
@@ -36,11 +37,11 @@ function Inventory() {
 
   const updateProductModalSetting = (selectedProductData) => {
     setUpdateProduct(selectedProductData);
-    setShowUpdateModal(!showUpdateModal);
+    setShowUpdateModal(true); // Always set to true when opening
   };
 
   const deleteProduct = (id) => {
-    fetch(`http://localhost:4000/api/product/delete/${id}`, {
+    fetch(`http://localhost:4000/api/inventory/${id}`, {
       method: "DELETE",
     })
       .then(() => {
@@ -197,8 +198,19 @@ function Inventory() {
         </div>
 
         {/* Modals */}
-        {showProductModal && <AddProduct addProductModalSetting={addProductModalSetting} />}
-        {showUpdateModal && <UpdateProduct updateProductData={updateProduct} />}
+        {showProductModal && (
+        <AddProduct 
+          addProductModalSetting={addProductModalSetting} 
+          updatePage={() => setUpdatePage(!updatePage)}
+        />
+      )}
+        {showUpdateModal && (
+          <EditRaw 
+            updateProductData={updateProduct} 
+            closeModal={() => setShowUpdateModal(false)}
+            updatePage={() => setUpdatePage(!updatePage)}
+          />
+        )}
       </div>
     </div>
   );
