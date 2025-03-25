@@ -17,9 +17,15 @@ import ProtectedWrapper from "./ProtectedWrapper";
 import { useEffect, useState } from "react";
 import Supplies from "./pages/supplies";
 import PurchaseDetails from "./pages/PurchaseDetails";
+import ViewProduct from "./pages/ViewProduct";
+import Supplies from "./pages/supplies"; 
 import Employee from "./pages/Employee";
 import Managers from "./pages/Managers";
 import Factoryworkers from "./pages/Factoryworkers";
+import TDashboard from "./pages/TDashboard";
+import TNavbar from "./components/TNavbar";
+import TaskForm from './components/TaskForm';
+import TaskList from './pages/TaskList';
 import "./index.css";
 
 const App = () => {
@@ -34,7 +40,7 @@ const App = () => {
       setUser("");
     }
     setLoader(false);
-  }, [myLoginUser]);
+  }, []);
 
   const signin = (newUser, callback) => {
     setUser(newUser);
@@ -80,9 +86,11 @@ const App = () => {
             <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
             <Route path="/EndProducts" element={<EndProducts />} />
             <Route path="/ViewProduct/:id" element={<ViewProduct />} />
-            <Route path="/edit-raw/:productId" element={<EditRaw />} />
-            <Route path="/delete-raw/:productId" element={<DeleteRaw />} />
             <Route path="/Supplies" element={<Supplies />} />
+            <Route path="task" element={<TaskList />} />
+            <Route path="task/create" element={<TaskForm />} />
+            <Route path="task/edit/:id" element={<TaskForm />} />
+
           </Route>
           <Route path="*" element={<NoPageFound />} />
         </Routes>
@@ -92,5 +100,3 @@ const App = () => {
 };
 
 export default App;
-
-//<Route path="/Addproduct" element={<Addproduct />} />

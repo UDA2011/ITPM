@@ -34,6 +34,7 @@ export default function AddProduct() {
     // Validation for price, quantity
     if (name === "price" || name === "quantity") {
       if (value < 0) {
+
         setError(`${name} cannot be negative`);
         return;
       }
@@ -141,7 +142,9 @@ export default function AddProduct() {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
+
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:h-auto">
+
                 <div className="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
                   <div className="sm:flex sm:items-start">
                     <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">

@@ -198,6 +198,7 @@ function Inventory() {
         </div>
 
         {/* Modals */}
+
         {showProductModal && (
         <AddProduct 
           addProductModalSetting={addProductModalSetting} 
@@ -211,9 +212,12 @@ function Inventory() {
             updatePage={() => setUpdatePage(!updatePage)}
           />
         )}
+
       </div>
     </div>
   );
 }
 
 export default Inventory;
+
+//{showUpdateModal && <UpdateProduct updateProductData={updateProduct} />}
