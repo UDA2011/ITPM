@@ -64,6 +64,10 @@ function SideMenu() {
               </Link>
             </summary>
           </details>
+
+          
+
+          
           <details className="group [&_summary::-webkit-details-marker]:hidden">
             <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
               <Link to="/register">
@@ -77,6 +81,22 @@ function SideMenu() {
               </Link>
             </summary>
           </details>
+
+          <details className="group [&_summary::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+              <Link to="/task">
+                <div className="flex items-center gap-2">
+                  <img
+                    alt="task-icon"
+                    src={require("../assets/task-icon.png")}
+                    style={{ width: '48px', height: '48px' }} 
+                  />
+                  <span className="text-sm font-medium"> Task </span>
+                </div>
+              </Link>
+            </summary>
+          </details>
+
         </nav>
       </div>
 

@@ -1,0 +1,123 @@
+.task-list-page {
+    padding: 20px;
+    margin-left: 250px; /* To account for sidebar */
+  }
+  
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .create-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .task-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .stat-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .stat-card h3 {
+    margin-top: 0;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .stat-card p {
+    margin-bottom: 0;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .task-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .task-filters button {
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .task-filters button.active {
+    background: #2196F3;
+    color: white;
+    border-color: #2196F3;
+  }
+  
+  .task-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .task-table th, .task-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .task-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+  
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .status-badge.pending {
+    background-color: #FFF3CD;
+    color: #856404;
+  }
+  
+  .status-badge.in-progress {
+    background-color: #CCE5FF;
+    color: #004085;
+  }
+  
+  .status-badge.completed {
+    background-color: #D4EDDA;
+    color: #155724;
+  }
+  
+  .edit-btn {
+    background-color: #FFC107;
+    color: black;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-right: 5px;
+    cursor: pointer;
+  }
+  
+  .delete-btn {
+    background-color: #DC3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }

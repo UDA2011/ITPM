@@ -13,18 +13,20 @@ import { useEffect, useState } from "react";
 import Addproduct from "./pages/Add product";
 import Sales from "./pages/Sales";
 import PurchaseDetails from "./pages/PurchaseDetails";
+import TDashboard from "./pages/TDashboard";
+import TNavbar from "./components/TNavbar";
+import TaskForm from './components/TaskForm';
+import TaskList from './pages/TaskList';
 
 const App = () => {
   const [user, setUser] = useState("");
   const [loader, setLoader] = useState(true);
   let myLoginUser = JSON.parse(localStorage.getItem("user"));
-  // console.log("USER: ",user)
 
   useEffect(() => {
     if (myLoginUser) {
       setUser(myLoginUser._id);
       setLoader(false);
-      // console.log("inside effect", myLoginUser)
     } else {
       setUser("");
       setLoader(false);
@@ -43,19 +45,7 @@ const App = () => {
 
   let value = { user, signin, signout };
 
-  if (loader)
-    return (
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <h1>LOADING...</h1>
-      </div>
-    );
+  if (loader) return <div className="flex justify-center items-center h-screen"><h1>LOADING...</h1></div>;
 
   return (
     <AuthContext.Provider value={value}>
@@ -72,10 +62,15 @@ const App = () => {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/purchase-details" element={<PurchaseDetails />} />
-            <Route path="/sales" element={<Sales />} />
-            <Route path="/Addproduct" element={<Addproduct />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="purchase-details" element={<PurchaseDetails />} />
+            <Route path="sales" element={<Sales />} />
+            <Route path="add-product" element={<Addproduct />} />
+            
+            {/* Task Management Routes */}
+            <Route path="task" element={<TaskList />} />
+            <Route path="task/create" element={<TaskForm />} />
+            <Route path="task/edit/:id" element={<TaskForm />} />
           </Route>
           <Route path="*" element={<NoPageFound />} />
         </Routes>

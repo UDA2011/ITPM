@@ -7,11 +7,14 @@ const salesRoute = require("./router/sales");
 const cors = require("cors");
 const User = require("./models/users");
 const Product = require("./models/Product");
+const jwt = require("jsonwebtoken");
+const taskRoutes = require('./router/taskRoutes');
+const path = require('path');
 
 const app = express();
 const PORT = 4000;
 
-main();
+main().catch(err => console.error("Database connection error:", err));
 app.use(express.json());
 app.use(cors());
 
@@ -27,31 +30,31 @@ app.use("/api/purchase", purchaseRoute);
 // Sales API
 app.use("/api/sales", salesRoute);
 
-// ------------- Login --------------
-let userAuthCheck;
+//Task API
+app.use("/api/tasks", taskRoutes);
 
+// ------------- Login --------------
 app.post("/api/login", async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email, password: req.body.password });
+    const { email, password } = req.body;
+
+    // Find user by email and password
+    const user = await User.findOne({ email, password });
+
     if (user) {
-      res.status(200).json(user);
-      userAuthCheck = user;
+      // Generate JWT token
+      const token = jwt.sign({ userId: user._id }, "your-secret-key", {
+        expiresIn: "1h",
+      });
+
+      // Return token and user data
+      res.status(200).json({ token, user });
     } else {
       res.status(401).json({ error: "Invalid Credentials" });
-      userAuthCheck = null;
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-// Get Logged-in User Details
-app.get("/api/login", (req, res) => {
-  if (userAuthCheck) {
-    res.status(200).json(userAuthCheck);
-  } else {
-    res.status(401).json({ error: "No user is logged in" });
   }
 });
 
@@ -92,4 +95,5 @@ app.get("/testget", async (req, res) => {
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+
 });
