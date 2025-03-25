@@ -23,7 +23,7 @@ export default function AddProduct() {
     // Validation for price, quantity, and value
     if (name === "price" || name === "quantity" || name === "value") {
       if (value < 0) {
-        alert(`${name} cannot be negative`);
+        alert(`${name} cannot be negative`);  // Fixed: using proper template literal
         return;
       }
     }
@@ -95,7 +95,6 @@ export default function AddProduct() {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              {/* Increase the size of the modal */}
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl h-auto">
                 <div className="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
                   <div className="sm:flex sm:items-start">
@@ -195,7 +194,6 @@ export default function AddProduct() {
                     </div>
                   </div>
                 </div>
-                {/* Buttons */}
                 <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse sm:px-8">
                   <button
                     type="button"

@@ -1,8 +1,5 @@
 const express = require("express");
 const { main } = require("./models/index"); // Import the main function
-const productRoute = require("./router/product");
-const addProductRoute = require("./router/Addproduct");
-const purchaseRoute = require("./router/purchase");
 const supplierRoutes = require("./router/SupplierRoute");
 const cors = require("cors");
 const User = require("./models/users");
@@ -19,9 +16,6 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
-app.use("/api/addproduct", addProductRoute);
-app.use("/api/product", productRoute);
-app.use("/api/purchase", purchaseRoute);
 app.use("/api/suppliers", supplierRoutes);
 
 // ------------- Login --------------
