@@ -53,6 +53,32 @@ function SideMenu() {
 
           <details className="group [&_summary::-webkit-details-marker]:hidden">
             <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+              <div className="flex items-center gap-2">
+                <img alt="store-icon" src={require("../assets/icons8-employee-48.png")} />
+                  <span className="text-sm font-medium"> Employee </span>
+              </div>
+            </summary>
+
+  {/* Nested Dropdown for Managers and Factory Workers */}
+   <div className="ml-6 mt-2 space-y-2">
+      <Link
+        to="/Employee/Managers"
+        className="block rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+    >
+      Managers
+    </Link>
+    <Link
+      to="/Employee/Factoryworkers"
+      className="block rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+    >
+      Factory workers
+    </Link>
+  </div>
+</details>
+
+
+          <details className="group [&_summary::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
               <Link to="/Addproduct">
                 <div className="flex items-center gap-2">
                   <img
@@ -64,19 +90,7 @@ function SideMenu() {
               </Link>
             </summary>
           </details>
-          <details className="group [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-              <Link to="/register">
-                <div className="flex items-center gap-2">
-                  <img
-                    alt="store-icon"
-                    src={require("../assets/icons8-employee-48.png")}
-                  />
-                  <span className="text-sm font-medium"> Add Employee </span>
-                </div>
-              </Link>
-            </summary>
-          </details>
+          
         </nav>
       </div>
 
