@@ -1,37 +1,41 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AuthContext from "./AuthContext";
+import ProtectedWrapper from "./ProtectedWrapper";
+import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import "./index.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
 import Inventory from "./pages/Inventory";
 import EndProducts from "./pages/EndProducts";
 import NoPageFound from "./pages/NoPageFound";
 import ViewProduct from "./pages/ViewProduct";
 import EditRaw from "./pages/EditRaw";   // Import EditRaw page
 import DeleteRaw from "./pages/DeleteRaw";
+//Simport Addproduct from "./pages/AddProduct";
+import Sales from "./pages/Sales";
 import AuthContext from "./AuthContext";
 import ProtectedWrapper from "./ProtectedWrapper";
 import { useEffect, useState } from "react";
 import Supplies from "./pages/supplies";
 import PurchaseDetails from "./pages/PurchaseDetails";
+import Employee from "./pages/Employee";
+import Managers from "./pages/Managers";
+import Factoryworkers from "./pages/Factoryworkers";
+import "./index.css";
 
 const App = () => {
   const [user, setUser] = useState("");
   const [loader, setLoader] = useState(true);
   let myLoginUser = JSON.parse(localStorage.getItem("user"));
-  // console.log("USER: ",user)
 
   useEffect(() => {
     if (myLoginUser) {
       setUser(myLoginUser._id);
-      setLoader(false);
-      // console.log("inside effect", myLoginUser)
     } else {
       setUser("");
-      setLoader(false);
     }
+    setLoader(false);
   }, [myLoginUser]);
 
   const signin = (newUser, callback) => {
@@ -48,14 +52,7 @@ const App = () => {
 
   if (loader)
     return (
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <div className="flex justify-center items-center h-screen">
         <h1>LOADING...</h1>
       </div>
     );
@@ -77,10 +74,20 @@ const App = () => {
             <Route index element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/purchase-details" element={<PurchaseDetails />} />
-            <Route path="/EndProducts" element={<EndProducts />} />
+
+           
+
+
+            <Route path="/sales" element={<Sales />} />
+            
+            <Route path="/Employee" element={<Employee />} />
+            <Route path="/Employee/Managers" element={<Managers />} />
+            <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
+               <Route path="/EndProducts" element={<EndProducts />} />
             <Route path="/ViewProduct/:id" element={<ViewProduct />} />
             <Route path="/edit-raw/:productId" element={<EditRaw />} />
             <Route path="/delete-raw/:productId" element={<DeleteRaw />} />
+
             <Route path="/Supplies" element={<Supplies />} />
           </Route>
           <Route path="*" element={<NoPageFound />} />
@@ -91,3 +98,5 @@ const App = () => {
 };
 
 export default App;
+
+//<Route path="/Addproduct" element={<Addproduct />} />
