@@ -10,6 +10,11 @@ import Inventory from "./pages/Inventory";
 import NoPageFound from "./pages/NoPageFound";
 //Simport Addproduct from "./pages/AddProduct";
 import Sales from "./pages/Sales";
+import AuthContext from "./AuthContext";
+import ProtectedWrapper from "./ProtectedWrapper";
+import { useEffect, useState } from "react";
+import Addproduct from "./pages/Add product";
+import Supplies from "./pages/supplies";
 import PurchaseDetails from "./pages/PurchaseDetails";
 import Employee from "./pages/Employee";
 import Managers from "./pages/Managers";
@@ -66,10 +71,13 @@ const App = () => {
             <Route index element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/purchase-details" element={<PurchaseDetails />} />
+
             <Route path="/sales" element={<Sales />} />
             <Route path="/Employee" element={<Employee />} />
             <Route path="/Employee/Managers" element={<Managers />} />
             <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
+            <Route path="/Supplies" element={<Supplies />} />
+            <Route path="/Addproduct" element={<Addproduct />} />
           </Route>
           <Route path="*" element={<NoPageFound />} />
         </Routes>

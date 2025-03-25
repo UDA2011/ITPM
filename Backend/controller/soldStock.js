@@ -1,4 +1,4 @@
-const Sales = require("../models/sales");
+const Sales = require("../models/Supplier");
 const Product = require("../models/Product");
 
 
