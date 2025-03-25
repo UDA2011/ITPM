@@ -15,7 +15,6 @@ import Employee from "./pages/Employee";
 import Managers from "./pages/Managers";
 import Factoryworkers from "./pages/Factoryworkers";
 import TDashboard from "./pages/TDashboard";
-import TNavbar from "./components/TNavbar";
 import TaskForm from './components/TaskForm';
 import TaskList from './pages/TaskList';
 import "./index.css";
