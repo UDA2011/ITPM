@@ -31,17 +31,6 @@ function SideMenu() {
           </Link>
 
           <Link
-            to="/purchase-details"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-            <img
-              alt="purchase-icon"
-              src={require("../assets/supplier-icon.png")}
-            />
-            <span className="text-sm font-medium">Purchase Details</span>
-          </Link>
-
-          <Link
             to="/supplies"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
           >
@@ -93,17 +82,6 @@ function SideMenu() {
               </Link>
             </summary>
           </details>
-
-          <Link
-            to="/addproduct"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-            <img
-              alt="add-product-icon"
-              src={require("../assets/icons8-product.gif")}
-            />
-            <span className="text-sm font-medium">Add Products</span>
-          </Link>
         </nav>
       </div>
 
