@@ -6,34 +6,32 @@ const addProduct = async (req, res) => {
     console.log("Request Body:", req.body); // Log the incoming request body
 
     // Validate required fields
-    if (!req.body.userID || !req.body.productname || !req.body.category || !req.body.description || !req.body.price || !req.body.image) {
+    if (!req.body.productname || !req.body.category || !req.body.description || !req.body.price) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
     const newProduct = new AddProduct({
-      userID: req.body.userID,
       productname: req.body.productname,
       category: req.body.category,
       description: req.body.description,
       price: req.body.price,
-      image: req.body.image,
     });
 
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct); // Use 201 for resource creation
   } catch (err) {
-    console.error("Error in addProduct:", err); // Log the error
+    console.error("Error in addProduct:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// Get All Products by User ID
+// Get All Products
 const getAllProducts = async (req, res) => {
   try {
-    const products = await AddProduct.find({ userID: req.params.userID }).sort({ _id: -1 });
+    const products = await AddProduct.find().sort({ _id: -1 }); // Fetch all products
     res.status(200).json(products);
   } catch (err) {
-    console.error("Error in getAllProducts:", err); // Log the error
+    console.error("Error in getAllProducts:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

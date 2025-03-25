@@ -2,11 +2,7 @@ const mongoose = require("mongoose");
 
 const AddproductSchema = new mongoose.Schema(
   {
-    userID: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
-      required: true,
-    },
+    
     productname: {
       type: String,
       required: true,
@@ -23,10 +19,7 @@ const AddproductSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    image: {
-      type: String,
-      required: true,
-    },
+    
   },
   { timestamps: true }
 );
