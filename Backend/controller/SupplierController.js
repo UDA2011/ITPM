@@ -1,9 +1,8 @@
-const mongoose = require("mongoose"); // Import mongoose
+const mongoose = require("mongoose");
 const Supplier = require("../models/Supplier");
-const Product = require("../models/Product");
+const Product = require("../models/product"); 
 const nodemailer = require("nodemailer");
 
-// Get all suppliers
 exports.getAllSuppliers = async (req, res) => {
   try {
     const suppliers = await Supplier.find();
@@ -72,6 +71,10 @@ exports.sendRequest = async (req, res) => {
   const { supplierId, productId, quantity, email } = req.body;
 
   try {
+    // Log the received IDs
+    console.log("Received supplierId:", supplierId);
+    console.log("Received productId:", productId);
+
     // Validate ObjectId
     if (!mongoose.isValidObjectId(supplierId)) {
       return res.status(400).json({ message: "Invalid supplierId" });
@@ -83,6 +86,10 @@ exports.sendRequest = async (req, res) => {
     // Fetch supplier and product details
     const supplier = await Supplier.findById(supplierId);
     const product = await Product.findById(productId);
+
+    // Log the fetched documents
+    console.log("Fetched supplier:", supplier);
+    console.log("Fetched product:", product);
 
     if (!supplier || !product) {
       return res.status(404).json({ message: "Supplier or product not found" });
