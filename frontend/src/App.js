@@ -9,6 +9,14 @@ import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
 import EndProducts from "./pages/EndProducts";
 import NoPageFound from "./pages/NoPageFound";
+import ViewProduct from "./pages/ViewProduct"
+import EditRaw from "./pages/EditRaw";   // Import EditRaw page
+import DeleteRaw from "./pages/DeleteRaw";
+import AuthContext from "./AuthContext";
+import ProtectedWrapper from "./ProtectedWrapper";
+import { useEffect, useState } from "react";
+import Supplies from "./pages/supplies";
+import PurchaseDetails from "./pages/PurchaseDetails";
 import ViewProduct from "./pages/ViewProduct";
 import Supplies from "./pages/supplies"; 
 import Employee from "./pages/Employee";
@@ -69,6 +77,10 @@ const App = () => {
           >
             <Route index element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
+            <Route path="/EndProducts" element={<EndProducts />} />
+            <Route path="/ViewProduct" element={<ViewProduct />} />
+            <Route path="/purchase-details" element={<PurchaseDetails />} />
+            <Route path="/sales" element={<Sales />} />
             <Route path="/Employee" element={<Employee />} />
             <Route path="/Employee/Managers" element={<Managers />} />
             <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />

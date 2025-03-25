@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import AddEnd from "../components/AddEnd"; // Import AddEnd instead of AddProduct
+import AddEnd from "../components/AddEnd";
 import AuthContext from "../AuthContext";
 
 function EndProducts() {
@@ -9,7 +9,6 @@ function EndProducts() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateProduct, setUpdateProduct] = useState([]);
   const [products, setAllProducts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [updatePage, setUpdatePage] = useState(true);
   const authContext = useContext(AuthContext);
 
@@ -79,9 +78,7 @@ function EndProducts() {
             </button>
           </div>
 
-          {/* Render AddEnd modal instead of AddProduct */}
           {showProductModal && <AddEnd closeModal={() => setShowProductModal(false)} />}
-
 
           <table className="min-w-full divide-y-2 divide-gray-200 text-sm">
             <thead>

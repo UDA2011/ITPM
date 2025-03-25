@@ -1,6 +1,7 @@
 const express = require("express");
 const { main } = require("./models/index"); // Import the main function
 const supplierRoutes = require("./router/SupplierRoute");
+const inventoryRoutes = require("./router/inventoryRoutes")
 const cors = require("cors");
 const User = require("./models/users");
 const jwt = require("jsonwebtoken");
@@ -17,6 +18,8 @@ app.use(cors());
 
 // Routes
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/inventory", inventoryRoutes);
+
 
 // ------------- Login --------------
 app.post("/api/login", async (req, res) => {

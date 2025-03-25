@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState, useContext } from "react";
+import { Fragment, useRef, useState, useContext, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../AuthContext";
@@ -7,7 +7,7 @@ export default function AddProduct() {
   const authContext = useContext(AuthContext);
 
   const [form, setForm] = useState({
-    productname: "",
+    name: "",
     category: "",
     price: "",
     quantity: "",
@@ -16,14 +16,30 @@ export default function AddProduct() {
 
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
+  const [error, setError] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Validation for price, quantity, and value
-    if (name === "price" || name === "quantity" || name === "value") {
+    // Validation for raw material name (only letters allowed)
+    if (name === "name") {
+      const letterPattern = /^[A-Za-z\s]+$/;
+      if (!letterPattern.test(value) && value !== "") {
+        setError("Raw Material Name can only contain letters and spaces.");
+      } else {
+        setError("");
+      }
+    }
+
+    // Validation for price, quantity
+    if (name === "price" || name === "quantity") {
       if (value < 0) {
-        alert(`${name} cannot be negative`);  // Fixed: using proper template literal
+
+        setError(`${name} cannot be negative`);
+        return;
+      }
+      if (value.length > 6) {
+        setError(`${name} cannot exceed 6 digits`);
         return;
       }
     }
@@ -31,41 +47,72 @@ export default function AddProduct() {
     setForm({ ...form, [name]: value });
   };
 
+  // Auto-calculate value whenever price or quantity changes
+  useEffect(() => {
+    if (form.price && form.quantity) {
+      const calculatedValue = (parseFloat(form.price) * parseFloat(form.quantity)).toFixed(2);
+      setForm(prevForm => ({
+        ...prevForm,
+        value: calculatedValue
+      }));
+    }
+  }, [form.price, form.quantity]);
+
   const addProduct = async () => {
     try {
-      console.log("Form Data:", form);
+      // Reset error
+      setError("");
 
       // Check if all fields are filled
-      if (!form.productname || !form.category || !form.price || !form.quantity || !form.value) {
-        alert("Please fill out all fields");
+      const requiredFields = ['name', 'category', 'price', 'quantity'];
+      const emptyFields = requiredFields.filter(field => !form[field]);
+      
+      if (emptyFields.length > 0) {
+        setError(`Please fill out: ${emptyFields.join(', ')}`);
         return;
       }
 
-      // Check if price, quantity, and value are positive
-      if (form.price <= 0 || form.quantity <= 0 || form.value <= 0) {
-        alert("Price, Quantity, and Value must be positive numbers");
+      // Check if price and quantity are positive numbers
+      if (parseFloat(form.price) <= 0 || parseFloat(form.quantity) <= 0) {
+        setError("Price and Quantity must be positive numbers");
         return;
       }
 
-      const response = await fetch("http://localhost:4000/api/addproduct/add", {
+      const productData = {
+        name: form.name,
+        category: form.category,
+        price: parseFloat(form.price),
+        quantity: parseInt(form.quantity),
+        value: parseFloat(form.value) || 0
+      };
+
+      const response = await fetch("http://localhost:4000/api/inventory", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(productData),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Failed to add product");
+        throw new Error(result.message || "Failed to add product");
       }
 
       alert("Product Added Successfully");
       setOpen(false);
+      // Reset form after successful submission
+      setForm({
+        name: "",
+        category: "",
+        price: "",
+        quantity: "",
+        value: "",
+      });
     } catch (error) {
       console.error("Error adding product:", error);
-      alert(error.message || "Error adding product. Please try again.");
+      setError(error.message || "Error adding product. Please try again.");
     }
   };
 
@@ -95,7 +142,9 @@ export default function AddProduct() {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl h-auto">
+
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:h-auto">
+
                 <div className="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
                   <div className="sm:flex sm:items-start">
                     <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -105,17 +154,22 @@ export default function AddProduct() {
                       <Dialog.Title as="h3" className="text-2xl font-semibold leading-6 text-gray-900">
                         Add Raw Material
                       </Dialog.Title>
+                      {error && (
+                        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded">
+                          {error}
+                        </div>
+                      )}
                       <form>
                         <div className="grid gap-6 mb-6 sm:grid-cols-2 mt-6">
                           <div>
-                            <label htmlFor="productname" className="block mb-2 text-sm font-medium text-gray-900">
+                            <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900">
                               Raw Material Name
                             </label>
                             <input
                               type="text"
-                              name="productname"
-                              id="productname"
-                              value={form.productname}
+                              name="name"
+                              id="name"
+                              value={form.name}
                               onChange={handleInputChange}
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                               placeholder="Enter Raw Material Name"
@@ -140,8 +194,7 @@ export default function AddProduct() {
                                 Active Pharmaceutical Ingredients
                               </option>
                               <option value="Solvents & Diluents">Solvents & Diluents</option>
-                              <option value="Additives & Enhancers">Additives & Enhancers</option>
-                              <option value="Other">Other</option>
+                              <option value="Additives & Enhancers">Additives & Enhancers</option>                            
                             </select>
                           </div>
                           <div>
@@ -157,6 +210,8 @@ export default function AddProduct() {
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                               placeholder="Enter Price"
                               required
+                              step="0.01"
+                              min="0"
                             />
                           </div>
                           <div>
@@ -172,21 +227,20 @@ export default function AddProduct() {
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                               placeholder="Enter Quantity"
                               required
+                              min="1"
                             />
                           </div>
                           <div>
                             <label htmlFor="value" className="block mb-2 text-sm font-medium text-gray-900">
-                              Value
+                              Value (Auto-calculated)
                             </label>
                             <input
-                              type="number"
+                              type="text"
                               name="value"
                               id="value"
                               value={form.value}
-                              onChange={handleInputChange}
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              placeholder="Enter Value"
-                              required
+                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                              readOnly
                             />
                           </div>
                         </div>
