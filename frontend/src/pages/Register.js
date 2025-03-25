@@ -1,5 +1,5 @@
-import { useState } from "react"; 
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import UploadImage from "../components/UploadImage";
 
 function Register() {
@@ -11,28 +11,24 @@ function Register() {
     phoneNumber: "",
     nic: "",
     jobPosition: "Manager",
+    age: "",
     jobStartDate: "",
     imageUrl: "",
   });
 
   const navigate = useNavigate();
 
-  // Handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if ((name === "phoneNumber" || name === "age") && Number(value) < 0) return;
     setForm({ ...form, [name]: value });
   };
 
-  // NIC validation function
   const validateNIC = (nic) => {
     return /^\d{9}[VvXx]$|^\d{12}$/.test(nic);
   };
 
-  // Register user
-  const registerUser = (e) => {
-    e.preventDefault(); // Prevent default form submission
-
+  const registerUser = () => {
     if (!validateNIC(form.nic)) {
       alert("Invalid NIC format. NIC should be 9 digits followed by a letter (V/X) or 12 digits.");
       return;
@@ -43,16 +39,9 @@ function Register() {
     localStorage.setItem("employees", JSON.stringify(employees));
 
     alert("Successfully Registered!");
-
-    // Navigate based on job position
-    if (form.jobPosition === "Manager") {
-      navigate("/managers");
-    } else if (form.jobPosition === "Factory Worker") {
-      navigate("/factoryworkers");
-    }
+    navigate("/managers"); // Redirect to Managers page
   };
 
-  // Upload Image Function
   const uploadImage = async (image) => {
     const data = new FormData();
     data.append("file", image);
@@ -70,16 +59,18 @@ function Register() {
       .catch((error) => console.log(error));
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 h-screen items-center place-items-center">
       <div className="w-full max-w-md space-y-8 p-10 rounded-lg">
         <div>
           <img className="mx-auto h-12 w-auto" src={require("../assets/logo.png")} alt="Your Company" />
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Employee Registration
-          </h2>
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Employee Registration</h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={registerUser}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col">
               <label>Full Name</label>
@@ -101,12 +92,14 @@ function Register() {
               <option value="Manager">Manager</option>
               <option value="Factory Worker">Factory Worker</option>
             </select>
+            <label>Age</label>
+            <input name="age" type="number" required placeholder="Age" value={form.age} onChange={handleInputChange} className="input-field" min="0" />
             <label>Job Start Date</label>
             <input name="jobStartDate" type="date" required value={form.jobStartDate} onChange={handleInputChange} className="input-field" />
             <UploadImage uploadImage={uploadImage} />
           </div>
           <div>
-            <button type="submit" className="btn">Sign up</button>
+            <button type="submit" className="btn" onClick={registerUser}>Sign up</button>
           </div>
         </form>
       </div>

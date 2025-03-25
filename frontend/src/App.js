@@ -8,17 +8,14 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
 import NoPageFound from "./pages/NoPageFound";
-//Simport Addproduct from "./pages/AddProduct";
-import Sales from "./pages/Sales";
-import AuthContext from "./AuthContext";
-import ProtectedWrapper from "./ProtectedWrapper";
-import { useEffect, useState } from "react";
-import Addproduct from "./pages/Add product";
-import Supplies from "./pages/supplies";
-import PurchaseDetails from "./pages/PurchaseDetails";
+import Supplies from "./pages/supplies"; 
 import Employee from "./pages/Employee";
 import Managers from "./pages/Managers";
 import Factoryworkers from "./pages/Factoryworkers";
+import TDashboard from "./pages/TDashboard";
+import TNavbar from "./components/TNavbar";
+import TaskForm from './components/TaskForm';
+import TaskList from './pages/TaskList';
 import "./index.css";
 
 const App = () => {
@@ -33,7 +30,7 @@ const App = () => {
       setUser("");
     }
     setLoader(false);
-  }, [myLoginUser]);
+  }, []);
 
   const signin = (newUser, callback) => {
     setUser(newUser);
@@ -70,14 +67,16 @@ const App = () => {
           >
             <Route index element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
-            <Route path="/purchase-details" element={<PurchaseDetails />} />
-
-            <Route path="/sales" element={<Sales />} />
             <Route path="/Employee" element={<Employee />} />
             <Route path="/Employee/Managers" element={<Managers />} />
             <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
+            <Route path="/EndProducts" element={<EndProducts />} />
+            <Route path="/ViewProduct/:id" element={<ViewProduct />} />
             <Route path="/Supplies" element={<Supplies />} />
-            <Route path="/Addproduct" element={<Addproduct />} />
+            <Route path="task" element={<TaskList />} />
+            <Route path="task/create" element={<TaskForm />} />
+            <Route path="task/edit/:id" element={<TaskForm />} />
+
           </Route>
           <Route path="*" element={<NoPageFound />} />
         </Routes>
