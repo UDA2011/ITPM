@@ -174,7 +174,7 @@ function Inventory() {
                   <td className="border px-4 py-2 flex gap-2">
                     <button
                       className="bg-blue-500 text-white px-2 py-1 rounded"
-                      onClick={() => navigate(`/view-product/${product._id}`)}
+                      onClick={() => navigate(`/ViewProduct/${product._id}`)}
                     >
                       View
                     </button>

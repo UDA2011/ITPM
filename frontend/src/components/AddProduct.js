@@ -7,7 +7,7 @@ export default function AddProduct() {
   const authContext = useContext(AuthContext);
 
   const [form, setForm] = useState({
-    productname: "",
+    name: "",
     category: "",
     price: "",
     quantity: "",
@@ -22,23 +22,23 @@ export default function AddProduct() {
     const { name, value } = e.target;
 
     // Validation for raw material name (only letters allowed)
-    if (name === "productname") {
-      const letterPattern = /^[A-Za-z\s]+$/; // Only allows letters and spaces
+    if (name === "name") {
+      const letterPattern = /^[A-Za-z\s]+$/;
       if (!letterPattern.test(value) && value !== "") {
         setError("Raw Material Name can only contain letters and spaces.");
       } else {
-        setError(""); // Clear error if valid input
+        setError("");
       }
     }
 
-    // Validation for price, quantity, and value
-    if (name === "price" || name === "quantity" || name === "value") {
+    // Validation for price, quantity
+    if (name === "price" || name === "quantity") {
       if (value < 0) {
-        alert(`${name} cannot be negative`);
+        setError(`${name} cannot be negative`);
         return;
       }
       if (value.length > 6) {
-        alert(`${name} cannot exceed 6 digits`);
+        setError(`${name} cannot exceed 6 digits`);
         return;
       }
     }
@@ -49,48 +49,69 @@ export default function AddProduct() {
   // Auto-calculate value whenever price or quantity changes
   useEffect(() => {
     if (form.price && form.quantity) {
-      setForm((prevForm) => ({
+      const calculatedValue = (parseFloat(form.price) * parseFloat(form.quantity)).toFixed(2);
+      setForm(prevForm => ({
         ...prevForm,
-        value: (parseFloat(form.price) * parseFloat(form.quantity)).toFixed(2),
+        value: calculatedValue
       }));
     }
   }, [form.price, form.quantity]);
 
   const addProduct = async () => {
     try {
-      console.log("Form Data:", form);
+      // Reset error
+      setError("");
 
       // Check if all fields are filled
-      if (!form.productname || !form.category || !form.price || !form.quantity || !form.value) {
-        alert("Please fill out all fields");
+      const requiredFields = ['name', 'category', 'price', 'quantity'];
+      const emptyFields = requiredFields.filter(field => !form[field]);
+      
+      if (emptyFields.length > 0) {
+        setError(`Please fill out: ${emptyFields.join(', ')}`);
         return;
       }
 
-      // Check if price, quantity, and value are positive
-      if (form.price <= 0 || form.quantity <= 0 || form.value <= 0) {
-        alert("Price, Quantity, and Value must be positive numbers");
+      // Check if price and quantity are positive numbers
+      if (parseFloat(form.price) <= 0 || parseFloat(form.quantity) <= 0) {
+        setError("Price and Quantity must be positive numbers");
         return;
       }
+
+      const productData = {
+        name: form.name,
+        category: form.category,
+        price: parseFloat(form.price),
+        quantity: parseInt(form.quantity),
+        value: parseFloat(form.value) || 0
+      };
 
       const response = await fetch("http://localhost:4000/api/inventory", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(productData),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Failed to add product");
+        throw new Error(result.message || "Failed to add product");
       }
 
       alert("Product Added Successfully");
       setOpen(false);
+      // Reset form after successful submission
+      setForm({
+        name: "",
+        category: "",
+        price: "",
+        quantity: "",
+        value: "",
+      });
     } catch (error) {
       console.error("Error adding product:", error);
-      alert(error.message || "Error adding product. Please try again.");
+      setError(error.message || "Error adding product. Please try again.");
     }
   };
 
@@ -130,25 +151,27 @@ export default function AddProduct() {
                       <Dialog.Title as="h3" className="text-2xl font-semibold leading-6 text-gray-900">
                         Add Raw Material
                       </Dialog.Title>
+                      {error && (
+                        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded">
+                          {error}
+                        </div>
+                      )}
                       <form>
                         <div className="grid gap-6 mb-6 sm:grid-cols-2 mt-6">
                           <div>
-                            <label htmlFor="productname" className="block mb-2 text-sm font-medium text-gray-900">
+                            <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900">
                               Raw Material Name
                             </label>
                             <input
                               type="text"
-                              name="productname"
-                              id="productname"
-                              value={form.productname}
+                              name="name"
+                              id="name"
+                              value={form.name}
                               onChange={handleInputChange}
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                               placeholder="Enter Raw Material Name"
                               required
                             />
-                            {error && (
-                              <p className="mt-2 text-sm text-red-600">{error}</p>
-                            )}
                           </div>
                           <div>
                             <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900">
@@ -184,6 +207,8 @@ export default function AddProduct() {
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                               placeholder="Enter Price"
                               required
+                              step="0.01"
+                              min="0"
                             />
                           </div>
                           <div>
@@ -199,6 +224,7 @@ export default function AddProduct() {
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                               placeholder="Enter Quantity"
                               required
+                              min="1"
                             />
                           </div>
                           <div>
@@ -206,14 +232,12 @@ export default function AddProduct() {
                               Value (Auto-calculated)
                             </label>
                             <input
-                              type="number"
+                              type="text"
                               name="value"
                               id="value"
                               value={form.value}
-                              onChange={handleInputChange}
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              placeholder="Value will be auto-calculated"
-                              disabled
+                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                              readOnly
                             />
                           </div>
                         </div>
@@ -221,7 +245,6 @@ export default function AddProduct() {
                     </div>
                   </div>
                 </div>
-                {/* Buttons */}
                 <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse sm:px-8">
                   <button
                     type="button"

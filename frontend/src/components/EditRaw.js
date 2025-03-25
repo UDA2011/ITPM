@@ -27,9 +27,9 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
       setProduct({
         name: updateProductData.name || "",
         category: updateProductData.category || "",
-        price: updateProductData.price || "",
-        quantity: updateProductData.quantity || "",
-        value: updateProductData.value || "",
+        price: updateProductData.price?.toString() || "",
+        quantity: updateProductData.quantity?.toString() || "",
+        value: updateProductData.value?.toString() || "",
       });
     }
   }, [updateProductData]);
@@ -126,40 +126,63 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("handleSubmit triggered!");
     
-    const newErrors = {
-      name: validateName(product.name),
-      price: validatePrice(product.price),
-      quantity: validateQuantity(product.quantity)
-    };
+    // Validate all fields
+    const nameError = validateName(product.name);
+    const priceError = validatePrice(product.price);
+    const quantityError = validateQuantity(product.quantity);
     
-    setErrors(newErrors);
+    setErrors({
+      name: nameError,
+      price: priceError,
+      quantity: quantityError
+    });
     
-    if (Object.values(newErrors).some(error => error)) return;
+    if (nameError || priceError || quantityError) {
+      return;
+    }
     
-    const finalProduct = {
-      ...product,
-      price: parseFloat(product.price),
-      quantity: parseInt(product.quantity),
-      value: parseFloat(product.value) || 0
-    };
-    
-    fetch(`http://localhost:4000/api/product/update/${updateProductData._id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(finalProduct),
-    })
-      .then((response) => response.json())
-      .then(() => {
-        updatePage();
-        closeModal();
-      })
-      .catch((err) => console.log(err));
+    try {
+      const finalProduct = {
+        name: product.name,
+        category: product.category,
+        price: parseFloat(product.price),
+        quantity: parseInt(product.quantity),
+        value: parseFloat(product.value) || 0
+      };
+      
+      const response = await fetch(`http://localhost:4000/api/inventory/${updateProductData._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(finalProduct),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update product');
+      }
+      
+      updatePage();
+      closeModal();
+    } catch (err) {
+      console.error("Error updating product:", err);
+      alert("Failed to update product. Please try again.");
+    }
+  };
+
+  const isFormValid = () => {
+    return (
+      product.name &&
+      product.category &&
+      product.price &&
+      product.quantity &&
+      !errors.name &&
+      !errors.price &&
+      !errors.quantity
+    );
   };
 
   return (
@@ -170,6 +193,7 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
           <button 
             onClick={closeModal} 
             className="text-gray-500 hover:text-gray-700 text-2xl"
+            aria-label="Close modal"
           >
             &times;
           </button>
@@ -278,7 +302,7 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
             <button
               type="submit"
               className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-200 disabled:opacity-50"
-              disabled={Object.values(errors).some(error => error) || !product.name || !product.category || !product.price || !product.quantity}
+              disabled={!isFormValid()}
             >
               Save Changes
             </button>

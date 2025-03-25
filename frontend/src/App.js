@@ -13,7 +13,8 @@ import AuthContext from "./AuthContext";
 import ProtectedWrapper from "./ProtectedWrapper";
 import { useEffect, useState } from "react";
 import Supplies from "./pages/supplies";
-import PurchaseDetails from "./pages/PurchaseDetails";
+
+
 
 const App = () => {
   const [user, setUser] = useState("");
@@ -74,7 +75,6 @@ const App = () => {
           >
             <Route index element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
-            <Route path="/purchase-details" element={<PurchaseDetails />} />
             <Route path="/EndProducts" element={<EndProducts />} />
             <Route path="/ViewProduct" element={<ViewProduct />} />
             <Route path="/Supplies" element={<Supplies />} />
