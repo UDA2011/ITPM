@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Supplier = require("../models/Supplier");
-const Product = require("../models/product"); 
 const nodemailer = require("nodemailer");
 
 exports.getAllSuppliers = async (req, res) => {

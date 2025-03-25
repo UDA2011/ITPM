@@ -10,15 +10,7 @@ import Inventory from "./pages/Inventory";
 import EndProducts from "./pages/EndProducts";
 import NoPageFound from "./pages/NoPageFound";
 import ViewProduct from "./pages/ViewProduct";
-import EditRaw from "./pages/EditRaw";   // Import EditRaw page
-import DeleteRaw from "./pages/DeleteRaw";
-//Simport Addproduct from "./pages/AddProduct";
-import Sales from "./pages/Sales";
-import AuthContext from "./AuthContext";
-import ProtectedWrapper from "./ProtectedWrapper";
-import { useEffect, useState } from "react";
-import Supplies from "./pages/supplies";
-import PurchaseDetails from "./pages/PurchaseDetails";
+import Supplies from "./pages/supplies"; 
 import Employee from "./pages/Employee";
 import Managers from "./pages/Managers";
 import Factoryworkers from "./pages/Factoryworkers";
@@ -36,7 +28,7 @@ const App = () => {
       setUser("");
     }
     setLoader(false);
-  }, [myLoginUser]);
+  }, []);
 
   const signin = (newUser, callback) => {
     setUser(newUser);
@@ -73,21 +65,11 @@ const App = () => {
           >
             <Route index element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
-            <Route path="/purchase-details" element={<PurchaseDetails />} />
-
-           
-
-
-            <Route path="/sales" element={<Sales />} />
-            
             <Route path="/Employee" element={<Employee />} />
             <Route path="/Employee/Managers" element={<Managers />} />
             <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
-               <Route path="/EndProducts" element={<EndProducts />} />
+            <Route path="/EndProducts" element={<EndProducts />} />
             <Route path="/ViewProduct/:id" element={<ViewProduct />} />
-            <Route path="/edit-raw/:productId" element={<EditRaw />} />
-            <Route path="/delete-raw/:productId" element={<DeleteRaw />} />
-
             <Route path="/Supplies" element={<Supplies />} />
           </Route>
           <Route path="*" element={<NoPageFound />} />
@@ -98,5 +80,3 @@ const App = () => {
 };
 
 export default App;
-
-//<Route path="/Addproduct" element={<Addproduct />} />
