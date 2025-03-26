@@ -16,16 +16,48 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
     supplierRating: supplier.supplierRating,
   });
 
+  const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
+
+  // Validation function
+  const validate = () => {
+    const newErrors = {};
+    
+    if (!updatedSupplier.name.trim()) newErrors.name = "Name is required";
+    if (!updatedSupplier.contact.trim()) newErrors.contact = "Contact is required";
+    if (!updatedSupplier.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updatedSupplier.email)) {
+      newErrors.email = "Email is invalid";
+    }
+    if (!updatedSupplier.address.trim()) newErrors.address = "Address is required";
+    if (!updatedSupplier.unit.trim()) newErrors.unit = "Unit is required";
+    if (updatedSupplier.deliveryTime < 0) newErrors.deliveryTime = "Delivery time cannot be negative";
+    if (updatedSupplier.cost < 0) newErrors.cost = "Cost cannot be negative";
+    if (updatedSupplier.historicalPerformance < 0 || updatedSupplier.historicalPerformance > 5) 
+      newErrors.historicalPerformance = "Must be between 0 and 5";
+    if (updatedSupplier.distance < 0) newErrors.distance = "Distance cannot be negative";
+    if (updatedSupplier.supplierRating < 0 || updatedSupplier.supplierRating > 5) 
+      newErrors.supplierRating = "Must be between 0 and 5";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Handling Input Change for input fields
   const handleInputChange = (key, value) => {
     setUpdatedSupplier({ ...updatedSupplier, [key]: value });
+    // Clear error when user starts typing
+    if (errors[key]) {
+      setErrors({ ...errors, [key]: null });
+    }
   };
 
   // PUT Data to update a supplier
   const updateSupplier = () => {
+    if (!validate()) return;
+
     fetch(`http://localhost:4000/api/suppliers/suppliers/${supplier._id}`, {
       method: "PUT",
       headers: {
@@ -33,7 +65,12 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
       },
       body: JSON.stringify(updatedSupplier),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
       .then((data) => {
         alert("Supplier updated successfully!");
         handlePageUpdate(); // Refresh the supplier list
@@ -111,10 +148,11 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("name", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.name ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Supplier Name"
                               required
                             />
+                            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                           </div>
 
                           {/* Contact */}
@@ -133,10 +171,11 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("contact", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.contact ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Contact Number"
                               required
                             />
+                            {errors.contact && <p className="mt-1 text-sm text-red-600">{errors.contact}</p>}
                           </div>
 
                           {/* Email */}
@@ -155,10 +194,11 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("email", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.email ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Email Address"
                               required
                             />
+                            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                           </div>
 
                           {/* Address */}
@@ -177,10 +217,11 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("address", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.address ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Address"
                               required
                             />
+                            {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
                           </div>
 
                           {/* Unit */}
@@ -199,10 +240,11 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("unit", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.unit ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Unit"
                               required
                             />
+                            {errors.unit && <p className="mt-1 text-sm text-red-600">{errors.unit}</p>}
                           </div>
 
                           {/* Delivery Time */}
@@ -221,11 +263,12 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("deliveryTime", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.deliveryTime ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Delivery Time"
                               min="0"
                               required
                             />
+                            {errors.deliveryTime && <p className="mt-1 text-sm text-red-600">{errors.deliveryTime}</p>}
                           </div>
 
                           {/* Cost */}
@@ -244,11 +287,12 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("cost", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.cost ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Cost"
                               min="0"
                               required
                             />
+                            {errors.cost && <p className="mt-1 text-sm text-red-600">{errors.cost}</p>}
                           </div>
 
                           {/* Historical Performance */}
@@ -267,13 +311,14 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("historicalPerformance", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.historicalPerformance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Historical Performance"
                               min="0"
                               max="5"
                               step="0.1"
                               required
                             />
+                            {errors.historicalPerformance && <p className="mt-1 text-sm text-red-600">{errors.historicalPerformance}</p>}
                           </div>
 
                           {/* Distance */}
@@ -292,11 +337,12 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("distance", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.distance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Distance"
                               min="0"
                               required
                             />
+                            {errors.distance && <p className="mt-1 text-sm text-red-600">{errors.distance}</p>}
                           </div>
 
                           {/* Supplier Rating */}
@@ -315,13 +361,14 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("supplierRating", e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              className={`bg-gray-50 border ${errors.supplierRating ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
                               placeholder="Supplier Rating"
                               min="0"
                               max="5"
                               step="0.1"
                               required
                             />
+                            {errors.supplierRating && <p className="mt-1 text-sm text-red-600">{errors.supplierRating}</p>}
                           </div>
                         </div>
                       </form>

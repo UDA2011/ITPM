@@ -11,8 +11,8 @@ import EndProducts from "./pages/EndProducts";
 import NoPageFound from "./pages/NoPageFound";
 import Supplies from "./pages/supplies"; 
 import Employee from "./pages/Employee";
-//import Managers from "./pages/Managers";
-//import Factoryworkers from "./pages/Factoryworkers";
+import Managers from "./pages/Managers";
+import Factoryworkers from "./pages/Factoryworkers";
 import TDashboard from "./pages/TDashboard";
 import TNavbar from "./components/TNavbar";
 import TaskForm from './components/TaskForm';
@@ -71,11 +71,14 @@ const App = () => {
             <Route path="/Employee" element={<Employee />} />
             <Route path="/EndProducts" element={<EndProducts />} />
             <Route path="/Employee" element={<Employee />} />
-
+            <Route path="/TDashboard" element={<TDashboard />} />
+            <Route path="/TNavbar" element={<TNavbar />} />
             <Route path="/Supplies" element={<Supplies />} />
             <Route path="task" element={<TaskList />} />
             <Route path="task/create" element={<TaskForm />} />
             <Route path="task/edit/:id" element={<TaskForm />} />
+            <Route path="/Employee/Managers" element={<Managers />} />
+            <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
           </Route>
           <Route path="*" element={<NoPageFound />} />
         </Routes>

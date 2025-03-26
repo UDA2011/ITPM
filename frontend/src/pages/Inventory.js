@@ -173,12 +173,6 @@ function Inventory() {
                   <td className="border px-4 py-2">{product.value}</td>
                   <td className="border px-4 py-2 flex gap-2">
                     <button
-                      className="bg-blue-500 text-white px-2 py-1 rounded"
-                      onClick={() => navigate(`/ViewProduct/${product._id}`)}
-                    >
-                      View
-                    </button>
-                    <button
                       className="bg-yellow-500 text-white px-2 py-1 rounded"
                       onClick={() => updateProductModalSetting(product)}
                     >
