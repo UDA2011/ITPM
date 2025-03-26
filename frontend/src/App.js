@@ -10,10 +10,9 @@ import Inventory from "./pages/Inventory";
 import EndProducts from "./pages/EndProducts";
 import NoPageFound from "./pages/NoPageFound";
 import Supplies from "./pages/supplies"; 
-import Supplies from "./pages/supplies";
 import Employee from "./pages/Employee";
-import Managers from "./pages/Managers";
-import Factoryworkers from "./pages/Factoryworkers";
+//import Managers from "./pages/Managers";
+//import Factoryworkers from "./pages/Factoryworkers";
 import TDashboard from "./pages/TDashboard";
 import TNavbar from "./components/TNavbar";
 import TaskForm from './components/TaskForm';
@@ -70,15 +69,9 @@ const App = () => {
             <Route index element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/Employee" element={<Employee />} />
-            <Route path="/Employee/Managers" element={<Managers />} />
-            <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
             <Route path="/EndProducts" element={<EndProducts />} />
-            <Route path="/EndProducts" element={<EndProducts />} />
-            <Route path="/ViewProduct" element={<ViewProduct />} />
             <Route path="/Employee" element={<Employee />} />
-            <Route path="/Employee/Managers" element={<Managers />} />
-            <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
-            <Route path="/ViewProduct/:id" element={<ViewProduct />} />
+
             <Route path="/Supplies" element={<Supplies />} />
             <Route path="task" element={<TaskList />} />
             <Route path="task/create" element={<TaskForm />} />
@@ -92,3 +85,11 @@ const App = () => {
 };
 
 export default App;
+
+/*
+
+            <Route path="/Employee/Managers" element={<Managers />} />
+            <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
+
+
+*/
