@@ -2,7 +2,7 @@ const express = require("express");
 const { main } = require("./models/index"); // Import the main function
 const supplierRoutes = require("./router/SupplierRoute");
 const inventoryRoutes = require("./router/inventoryRoutes")
-const taskRoutes = require("./router/taskRoutes")
+//const taskRoutes = require("./router/taskRoutes")
 const cors = require("cors");
 const User = require("./models/users");
 const jwt = require("jsonwebtoken");
@@ -20,7 +20,7 @@ app.use(cors());
 // Routes
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/inventory", inventoryRoutes);
-app.use('/api/tasks', taskRoutes);
+//app.use('/api/tasks', taskRoutes);
 
 
 // ------------- Login --------------
