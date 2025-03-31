@@ -1,11 +1,14 @@
 const express = require("express");
-const { main } = require("./models/index"); // Import the main function
+const { main } = require("./models/index");
+const cors = require('cors');
+
+
+// Import routes
 const supplierRoutes = require("./router/SupplierRoute");
-const inventoryRoutes = require("./router/inventoryRoutes")
-//const taskRoutes = require("./router/taskRoutes")
-const cors = require("cors");
+const inventoryRoutes = require("./router/inventoryRoutes");
+const endProductRoutes = require('./router/endProductRoutes');
+const requestRoutes = require('./router/requestRoutes');
 const User = require("./models/users");
-const jwt = require("jsonwebtoken");
 
 const app = express();
 const PORT = 4000;
@@ -14,78 +17,50 @@ const PORT = 4000;
 main().catch((err) => console.error("MongoDB connection error:", err));
 
 // Middleware
-app.use(express.json());
-app.use(cors());
+app.use(express.json()); // For parsing JSON request bodies
+app.use(cors()); 
 
 // Routes
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/inventory", inventoryRoutes);
-//app.use('/api/tasks', taskRoutes);
+app.use('/api/endproducts', endProductRoutes);
+app.use('/api/requests', requestRoutes);
 
-
-// ------------- Login --------------
+// Simplified login (without JWT)
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Find user by email and password
     const user = await User.findOne({ email, password });
-
+    
     if (user) {
-      // Generate JWT token
-      const token = jwt.sign({ userId: user._id }, "your-secret-key", {
-        expiresIn: "1h",
+      res.status(200).json({
+        user: {
+          _id: user._id,
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          role: user.jobPosition
+        }
       });
-
-      // Return token and user data
-      res.status(200).json({ token, user });
     } else {
-      res.status(401).json({ error: "Invalid Credentials" });
+      res.status(401).json({ error: "Invalid credentials" });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// ------------- Registration --------------
+// Simplified registration
 app.post("/api/register", async (req, res) => {
   try {
-    const newUser = new User({
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      email: req.body.email,
-      password: req.body.password,
-      phoneNumber: req.body.phoneNumber,
-      nic: req.body.nic,
-      jobPosition: req.body.jobPosition,
-      age: req.body.age,
-      jobStartDate: req.body.jobStartDate,
-      imageUrl: req.body.imageUrl,
-    });
-
+    const newUser = new User(req.body);
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
   } catch (err) {
-    console.error("Signup Error: ", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Registration failed" });
   }
 });
 
-// Test Route
-app.get("/testget", async (req, res) => {
-  try {
-    const result = await Product.findOne({ _id: "6429979b2e5434138eda1564" });
-    res.status(200).json(result);
-  } catch (err) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-// Start Server
+// Start server
 app.listen(PORT, () => {
-
-
-  console.log(`Server is running on port ${PORT}`);
-
+  console.log(`Server running on port ${PORT}`);
 });
