@@ -12,11 +12,23 @@ const RequestModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleQuantityChange = (productId, value) => {
-    const numValue = parseInt(value) || 0;
-    setQuantities(prev => ({
-      ...prev,
-      [productId]: Math.max(1, numValue) // Minimum request quantity is 1
-    }));
+    // Allow empty string for better UX while typing
+    if (value === "") {
+      setQuantities(prev => ({
+        ...prev,
+        [productId]: ""
+      }));
+      return;
+    }
+    
+    const numValue = parseInt(value);
+    // Only update if it's a valid number
+    if (!isNaN(numValue)) {
+      setQuantities(prev => ({
+        ...prev,
+        [productId]: numValue
+      }));
+    }
   };
 
   const validateRequest = () => {
@@ -27,9 +39,10 @@ const RequestModal = ({
     }
 
     // Check all selected items have valid request quantities
-    const missingQuantities = requestItems.some(
-      item => !quantities[item._id] || quantities[item._id] < 1
-    );
+    const missingQuantities = requestItems.some(item => {
+      const qty = quantities[item._id];
+      return qty === undefined || qty === "" || qty < 1;
+    });
     
     if (missingQuantities) {
       setError("Please enter valid quantities (minimum 1) for all items");
@@ -60,7 +73,7 @@ const RequestModal = ({
         name: item.name,
         currentQty: item.quantity,
         requestQty: quantities[item._id],
-        status: item.quantity <= 0 ? "out of stock" : "in stock" // Fixed status value
+        status: item.quantity <= 0 ? "out of stock" : "in stock"
       }));
 
       const response = await fetch("http://localhost:4000/api/requests", {
@@ -131,12 +144,27 @@ const RequestModal = ({
                       <input
                         type="number"
                         min="1"
-                        value={quantities[item._id] || ""}
+                        value={quantities[item._id] ?? ""}
                         onChange={e => handleQuantityChange(item._id, e.target.value)}
                         className="w-full p-1 border rounded"
                         onKeyDown={e => {
-                          if (["-", "e", "E", "+"].includes(e.key)) {
+                          if (["e", "E", "+"].includes(e.key)) {
                             e.preventDefault();
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Ensure minimum value of 1 when field loses focus
+                          const value = parseInt(e.target.value);
+                          if (isNaN(value)) {
+                            setQuantities(prev => ({
+                              ...prev,
+                              [item._id]: 1
+                            }));
+                          } else if (value < 1) {
+                            setQuantities(prev => ({
+                              ...prev,
+                              [item._id]: 1
+                            }));
                           }
                         }}
                       />
