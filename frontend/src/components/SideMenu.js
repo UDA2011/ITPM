@@ -8,6 +8,7 @@ function SideMenu() {
     <div className="h-full flex-col justify-between bg-white hidden lg:flex">
       <div className="px-4 py-6">
         <nav aria-label="Main Nav" className="mt-6 flex flex-col space-y-1">
+          {/* Dashboard Link */}
           <Link
             to="/"
             className="flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700"
@@ -19,17 +20,34 @@ function SideMenu() {
             <span className="text-sm font-medium">Dashboard</span>
           </Link>
 
-          <Link
-            to="/inventory"
-            className="flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700"
-          >
-            <img
-              alt="inventory-icon"
-              src={require("../assets/inventory-icon.png")}
-            />
-            <span className="text-sm font-medium">Inventory</span>
-          </Link>
+          {/* Inventory Dropdown */}
+          <details className="group [&_summary::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+              <div className="flex items-center gap-2">
+                <img
+                  alt="inventory-icon"
+                  src={require("../assets/inventory-icon.png")}
+                />
+                <span className="text-sm font-medium">Inventory</span>
+              </div>
+            </summary>
+            <div className="ml-6 mt-2 space-y-2">
+              <Link
+                to="/inventory"
+                className="block rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              >
+                Raw Materials
+              </Link>
+              <Link
+                to="/EndProducts"  // Changed to match your exact route from App.js
+                className="block rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              >
+                End Products
+              </Link>
+            </div>
+          </details>
 
+          {/* Supplier Link */}
           <Link
             to="/supplies"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
@@ -68,20 +86,18 @@ function SideMenu() {
             </div>
           </details>
 
-          <details className="group [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-              <Link to="/task">
-                <div className="flex items-center gap-2">
-                  <img
-                    alt="task-icon"
-                    src={require("../assets/task-icon.png")}
-                    style={{ width: '48px', height: '48px' }} 
-                  />
-                  <span className="text-sm font-medium"> Task </span>
-                </div>
-              </Link>
-            </summary>
-          </details>
+          {/* Task Link */}
+          <Link
+            to="/task"
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          >
+            <img
+              alt="task-icon"
+              src={require("../assets/task-icon.png")}
+              style={{ width: '24px', height: '24px' }}
+            />
+            <span className="text-sm font-medium">Task</span>
+          </Link>
         </nav>
       </div>
 

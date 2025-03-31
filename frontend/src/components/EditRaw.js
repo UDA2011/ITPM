@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-function EditRaw({ updateProductData, closeModal, updatePage }) {
+function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
   const [product, setProduct] = useState({
     name: "",
     category: "",
@@ -23,16 +23,16 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
   ];
 
   useEffect(() => {
-    if (updateProductData) {
+    if (updateProduct) {
       setProduct({
-        name: updateProductData.name || "",
-        category: updateProductData.category || "",
-        price: updateProductData.price?.toString() || "",
-        quantity: updateProductData.quantity?.toString() || "",
-        value: updateProductData.value?.toString() || "",
+        name: updateProduct.name || "",
+        category: updateProduct.category || "",
+        price: updateProduct.price?.toString() || "",
+        quantity: updateProduct.quantity?.toString() || "",
+        value: updateProduct.value?.toString() || "",
       });
     }
-  }, [updateProductData]);
+  }, [updateProduct]);
 
   const validateName = (value) => {
     const lettersOnly = /^[A-Za-z\s]+$/;
@@ -90,7 +90,7 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
   };
 
   const handleQuantityChange = (e) => {
-    const value = e.target.value.replace(/[^0-9]/g, ''); // Remove all non-digit characters
+    const value = e.target.value.replace(/[^0-9]/g, '');
     const error = validateQuantity(value);
     setErrors(prev => ({ ...prev, quantity: error }));
     
@@ -153,7 +153,7 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
         value: parseFloat(product.value) || 0
       };
       
-      const response = await fetch(`http://localhost:4000/api/inventory/${updateProductData._id}`, {
+      const response = await fetch(`http://localhost:4000/api/inventory/${updateProduct._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -165,8 +165,8 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
         throw new Error('Failed to update product');
       }
       
-      updatePage();
-      closeModal();
+      refreshData();
+      onClose();
     } catch (err) {
       console.error("Error updating product:", err);
       alert("Failed to update product. Please try again.");
@@ -189,9 +189,9 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Edit Raw Material</h2>
+          <h2 className="text-xl font-bold">Edit {updateProduct?.name}</h2>
           <button 
-            onClick={closeModal} 
+            onClick={onClose} 
             className="text-gray-500 hover:text-gray-700 text-2xl"
             aria-label="Close modal"
           >
@@ -241,7 +241,7 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
 
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="price">
-              Price 
+              Price (Rs.)
             </label>
             <input
               type="text"
@@ -260,7 +260,7 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
 
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="quantity">
-              Quantity 
+              Quantity
             </label>
             <input
               type="text"
@@ -279,7 +279,7 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
 
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="value">
-              Value (Auto-calculated)
+              Value (Rs.) (Auto-calculated)
             </label>
             <input
               type="text"
@@ -294,7 +294,7 @@ function EditRaw({ updateProductData, closeModal, updatePage }) {
           <div className="flex justify-end gap-3">
             <button
               type="button"
-              onClick={closeModal}
+              onClick={onClose}
               className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition duration-200"
             >
               Cancel

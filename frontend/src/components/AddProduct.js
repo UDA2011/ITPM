@@ -34,7 +34,6 @@ export default function AddProduct() {
     // Validation for price, quantity
     if (name === "price" || name === "quantity") {
       if (value < 0) {
-
         setError(`${name} cannot be negative`);
         return;
       }
@@ -83,13 +82,16 @@ export default function AddProduct() {
         category: form.category,
         price: parseFloat(form.price),
         quantity: parseInt(form.quantity),
-        value: parseFloat(form.value) || 0
+        value: parseFloat(form.value) || 0,
+        requestQty: 0, // Default value for request quantity
+        currentQty: parseInt(form.quantity) // Current quantity equals initial quantity
       };
 
       const response = await fetch("http://localhost:4000/api/inventory", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
+          "Authorization": `Bearer ${authContext.user.token}` // Added authorization header
         },
         body: JSON.stringify(productData),
       });
@@ -142,9 +144,7 @@ export default function AddProduct() {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:h-auto">
-
                 <div className="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
                   <div className="sm:flex sm:items-start">
                     <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
