@@ -21,9 +21,14 @@ const RequestModal = ({
       return;
     }
     
+    // Prevent input longer than 8 digits
+    if (value.length > 8) {
+      return;
+    }
+    
     const numValue = parseInt(value);
-    // Only update if it's a valid number
-    if (!isNaN(numValue)) {
+    // Only update if it's a valid positive number
+    if (!isNaN(numValue) && numValue > 0) {
       setQuantities(prev => ({
         ...prev,
         [productId]: numValue
@@ -144,11 +149,21 @@ const RequestModal = ({
                       <input
                         type="number"
                         min="1"
+                        max="99999999" // 8-digit maximum
                         value={quantities[item._id] ?? ""}
                         onChange={e => handleQuantityChange(item._id, e.target.value)}
                         className="w-full p-1 border rounded"
                         onKeyDown={e => {
-                          if (["e", "E", "+"].includes(e.key)) {
+                          // Prevent invalid characters
+                          if (["e", "E", "+", "-", "."].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                          // Prevent typing if already at max length (unless deleting)
+                          if (e.target.value.length >= 8 && 
+                              e.key !== "Backspace" && 
+                              e.key !== "Delete" && 
+                              e.key !== "ArrowLeft" && 
+                              e.key !== "ArrowRight") {
                             e.preventDefault();
                           }
                         }}
@@ -164,6 +179,11 @@ const RequestModal = ({
                             setQuantities(prev => ({
                               ...prev,
                               [item._id]: 1
+                            }));
+                          } else if (value > 99999999) {
+                            setQuantities(prev => ({
+                              ...prev,
+                              [item._id]: 99999999
                             }));
                           }
                         }}
