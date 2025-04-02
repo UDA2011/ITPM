@@ -37,6 +37,7 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
   const validateName = (value) => {
     const lettersOnly = /^[A-Za-z\s]+$/;
     if (!value.trim()) return "Name is required";
+    if (value.length > 20) return "Name cannot exceed 20 characters";
     if (!lettersOnly.test(value)) return "Only letters and spaces allowed";
     return "";
   };
@@ -112,10 +113,12 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
     const { name, value } = e.target;
     
     if (name === "name") {
-      const error = validateName(value);
+      // Limit input to 20 characters
+      const trimmedValue = value.slice(0, 20);
+      const error = validateName(trimmedValue);
       setErrors(prev => ({ ...prev, [name]: error }));
-      if (error === "" || value === "") {
-        setProduct(prev => ({ ...prev, [name]: value }));
+      if (error === "" || trimmedValue === "") {
+        setProduct(prev => ({ ...prev, [name]: trimmedValue }));
       }
       return;
     }
@@ -210,12 +213,16 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
               name="name"
               value={product.name}
               onChange={handleChange}
+              maxLength={20}
               className={`w-full border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
               required
             />
             {errors.name && (
               <p className="text-red-500 text-xs mt-1">{errors.name}</p>
             )}
+            <p className="text-xs text-gray-500 mt-1">
+              {product.name.length}/20 characters
+            </p>
           </div>
 
           <div className="mb-4">
