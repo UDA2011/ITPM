@@ -21,14 +21,21 @@ export default function AddProduct() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Validation for raw material name (only letters allowed)
+    // Validation for raw material name (only letters allowed and max length 20)
     if (name === "name") {
       const letterPattern = /^[A-Za-z\s]+$/;
+      
+      if (value.length > 20) {
+        setError("Raw Material Name cannot exceed 20 characters.");
+        return;
+      }
+      
       if (!letterPattern.test(value) && value !== "") {
         setError("Raw Material Name can only contain letters and spaces.");
-      } else {
-        setError("");
+        return;
       }
+      
+      setError("");
     }
 
     // Validation for price, quantity
@@ -68,6 +75,12 @@ export default function AddProduct() {
       
       if (emptyFields.length > 0) {
         setError(`Please fill out: ${emptyFields.join(', ')}`);
+        return;
+      }
+
+      // Check if name exceeds maximum length
+      if (form.name.length > 20) {
+        setError("Raw Material Name cannot exceed 20 characters");
         return;
       }
 
@@ -174,6 +187,7 @@ export default function AddProduct() {
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                               placeholder="Enter Raw Material Name"
                               required
+                              maxLength={20}
                             />
                           </div>
                           <div>
