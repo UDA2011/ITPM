@@ -3,7 +3,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../AuthContext";
 
-export default function AddProduct() {
+export default function AddProduct({ setUpdatePage, addProductModalSetting, productType }) {
   const authContext = useContext(AuthContext);
 
   const [form, setForm] = useState({
@@ -64,6 +64,11 @@ export default function AddProduct() {
     }
   }, [form.price, form.quantity]);
 
+  const handleClose = () => {
+    setOpen(false);
+    addProductModalSetting();
+  };
+
   const addProduct = async () => {
     try {
       // Reset error
@@ -97,14 +102,15 @@ export default function AddProduct() {
         quantity: parseInt(form.quantity),
         value: parseFloat(form.value) || 0,
         requestQty: 0, // Default value for request quantity
-        currentQty: parseInt(form.quantity) // Current quantity equals initial quantity
+        currentQty: parseInt(form.quantity), // Current quantity equals initial quantity
+        type: productType // Include the product type from props
       };
 
       const response = await fetch("http://localhost:4000/api/inventory", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
-          "Authorization": `Bearer ${authContext.user.token}` // Added authorization header
+          "Authorization": `Bearer ${authContext.user.token}`
         },
         body: JSON.stringify(productData),
       });
@@ -116,7 +122,7 @@ export default function AddProduct() {
       }
 
       alert("Product Added Successfully");
-      setOpen(false);
+      handleClose();
       // Reset form after successful submission
       setForm({
         name: "",
@@ -125,6 +131,9 @@ export default function AddProduct() {
         quantity: "",
         value: "",
       });
+      
+      // Trigger parent component to refresh data
+      setUpdatePage(prev => !prev);
     } catch (error) {
       console.error("Error adding product:", error);
       setError(error.message || "Error adding product. Please try again.");
@@ -133,7 +142,7 @@ export default function AddProduct() {
 
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={setOpen}>
+      <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={handleClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -165,7 +174,7 @@ export default function AddProduct() {
                     </div>
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                       <Dialog.Title as="h3" className="text-2xl font-semibold leading-6 text-gray-900">
-                        Add Raw Material
+                        Add {productType === "raw" ? "Raw Material" : "End Product"}
                       </Dialog.Title>
                       {error && (
                         <div className="mt-4 p-3 bg-red-100 text-red-700 rounded">
@@ -176,7 +185,7 @@ export default function AddProduct() {
                         <div className="grid gap-6 mb-6 sm:grid-cols-2 mt-6">
                           <div>
                             <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900">
-                              Raw Material Name
+                              {productType === "raw" ? "Raw Material Name" : "Product Name"}
                             </label>
                             <input
                               type="text"
@@ -185,7 +194,7 @@ export default function AddProduct() {
                               value={form.name}
                               onChange={handleInputChange}
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              placeholder="Enter Raw Material Name"
+                              placeholder={`Enter ${productType === "raw" ? "Raw Material" : "Product"} Name`}
                               required
                               maxLength={20}
                             />
@@ -268,12 +277,12 @@ export default function AddProduct() {
                     className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
                     onClick={addProduct}
                   >
-                    Add Product
+                    Add {productType === "raw" ? "Material" : "Product"}
                   </button>
                   <button
                     type="button"
                     className="mt-3 inline-flex justify-center rounded-md bg-white px-6 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                    onClick={() => setOpen(false)}
+                    onClick={handleClose}
                     ref={cancelButtonRef}
                   >
                     Cancel
