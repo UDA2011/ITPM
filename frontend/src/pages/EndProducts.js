@@ -11,13 +11,13 @@ function EndProducts() {
   const [updateProduct, setUpdateProduct] = useState(null);
   const [products, setAllProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [updatePage, setUpdatePage] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Changed from updatePage to refreshTrigger
   const [searchTerm, setSearchTerm] = useState("");
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
     fetchProductsData();
-  }, [updatePage]);
+  }, [refreshTrigger]); // Now using refreshTrigger
 
   useEffect(() => {
     const filtered = products.filter(product => 
@@ -44,7 +44,7 @@ function EndProducts() {
     
     try {
       await fetch(`http://localhost:4000/api/endproducts/${id}`, { method: "DELETE" });
-      setUpdatePage(prev => !prev);
+      setRefreshTrigger(prev => prev + 1); // Increment instead of toggle
     } catch (err) {
       console.error("Delete error:", err);
       alert("Failed to delete product. Please try again.");
@@ -222,13 +222,13 @@ function EndProducts() {
         <AddEnd 
           isOpen={showProductModal} 
           onClose={() => setShowProductModal(false)} 
-          setUpdatePage={setUpdatePage} 
+          setUpdatePage={() => setRefreshTrigger(prev => prev + 1)} 
         />
         <EditEnd 
           isOpen={showUpdateModal} 
           onClose={() => setShowUpdateModal(false)} 
           product={updateProduct} 
-          onUpdate={() => setUpdatePage(!updatePage)} 
+          onUpdate={() => setRefreshTrigger(prev => prev + 1)} 
         />
       </div>
     </div>

@@ -3,7 +3,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../AuthContext";
 
-export default function AddEnd({ isOpen, onClose, setUpdatePage, updatePage }) {
+export default function AddEnd({ isOpen, onClose, setUpdatePage }) {
   const authContext = useContext(AuthContext);
   const [form, setForm] = useState({
     userID: authContext.user?._id || "",
@@ -41,13 +41,11 @@ export default function AddEnd({ isOpen, onClose, setUpdatePage, updatePage }) {
 
   const handleNameChange = (e) => {
     const { value } = e.target;
-    // Only allow letters and spaces, max length 20
     if (/^[a-zA-Z\s]*$/.test(value)) {
       setForm(prev => ({
         ...prev,
         name: value
       }));
-      // Check length validation
       if (value.length > 20) {
         setFieldErrors(prev => ({
           ...prev,
@@ -171,7 +169,7 @@ export default function AddEnd({ isOpen, onClose, setUpdatePage, updatePage }) {
       alert("Product added successfully!");
       resetForm();
       onClose();
-      setUpdatePage(!updatePage);
+      setUpdatePage(); // Now just calls the function passed from parent
     } catch (error) {
       console.error("Error adding product:", error);
       setError(error.message || "An error occurred while adding the product");
