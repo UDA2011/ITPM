@@ -18,6 +18,7 @@ const supplierSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  
   deliveryTime: {
     type: Number, // Assuming delivery time is in days
     default: 0,
@@ -41,6 +42,10 @@ const supplierSchema = new mongoose.Schema({
   supplierRating: {
     type: Number,
     default: 0,
+  },
+  materials: {
+    type: [String], // Array of material names
+    default: [],
   },
 });
 

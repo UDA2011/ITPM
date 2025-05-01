@@ -1,6 +1,6 @@
 import { Fragment, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate }) {
   const [supplier, setSupplier] = useState({
@@ -14,11 +14,40 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
     historicalPerformance: 0,
     distance: 0,
     supplierRating: 0,
+    materials: []
   });
 
+  const [materialInput, setMaterialInput] = useState("");
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
+
+  // Add material to the list
+  const addMaterial = () => {
+    if (materialInput.trim() && !supplier.materials.includes(materialInput.trim())) {
+      setSupplier({
+        ...supplier,
+        materials: [...supplier.materials, materialInput.trim()]
+      });
+      setMaterialInput("");
+    }
+  };
+
+  // Remove material from the list
+  const removeMaterial = (materialToRemove) => {
+    setSupplier({
+      ...supplier,
+      materials: supplier.materials.filter(m => m !== materialToRemove)
+    });
+  };
+
+  // Handle key press for material input
+  const handleMaterialKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addMaterial();
+    }
+  };
 
   // Validation function
   const validate = () => {
@@ -83,7 +112,6 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
   };
 
   return (
-    // Modal
     <Transition.Root show={open} as={Fragment}>
       <Dialog
         as="div"
@@ -123,7 +151,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                         aria-hidden="true"
                       />
                     </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                       <Dialog.Title
                         as="h3"
                         className="text-lg py-4 font-semibold leading-6 text-gray-900"
@@ -136,7 +164,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="name"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Name
                             </label>
@@ -148,7 +176,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("name", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.name ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.name ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Supplier Name"
                               required
                             />
@@ -159,7 +187,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="contact"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Contact
                             </label>
@@ -171,7 +199,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("contact", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.contact ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.contact ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Contact Number"
                               required
                             />
@@ -182,7 +210,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="email"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Email
                             </label>
@@ -194,7 +222,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("email", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.email ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.email ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Email Address"
                               required
                             />
@@ -205,7 +233,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="address"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Address
                             </label>
@@ -217,7 +245,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("address", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.address ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.address ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Address"
                               required
                             />
@@ -228,7 +256,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="unit"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Unit
                             </label>
@@ -240,7 +268,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("unit", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.unit ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.unit ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Unit"
                               required
                             />
@@ -251,7 +279,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="deliveryTime"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Delivery Time (Days)
                             </label>
@@ -263,7 +291,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("deliveryTime", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.deliveryTime ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.deliveryTime ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Delivery Time"
                               min="0"
                               required
@@ -275,7 +303,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="cost"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Cost
                             </label>
@@ -287,7 +315,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("cost", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.cost ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.cost ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Cost"
                               min="0"
                               required
@@ -299,7 +327,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="historicalPerformance"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Historical Performance
                             </label>
@@ -311,7 +339,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("historicalPerformance", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.historicalPerformance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.historicalPerformance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Historical Performance"
                               min="0"
                               max="5"
@@ -325,7 +353,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="distance"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Distance (km)
                             </label>
@@ -337,7 +365,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("distance", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.distance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.distance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Distance"
                               min="0"
                               required
@@ -349,7 +377,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                           <div>
                             <label
                               htmlFor="supplierRating"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Supplier Rating
                             </label>
@@ -361,7 +389,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               onChange={(e) =>
                                 handleInputChange("supplierRating", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.supplierRating ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.supplierRating ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Supplier Rating"
                               min="0"
                               max="5"
@@ -369,6 +397,49 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
                               required
                             />
                             {errors.supplierRating && <p className="mt-1 text-sm text-red-600">{errors.supplierRating}</p>}
+                          </div>
+
+                          {/* Materials Input */}
+                          <div className="sm:col-span-2">
+                            <label htmlFor="materials" className="block mb-2 text-sm font-medium text-gray-900">
+                              Materials
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                name="materials"
+                                id="materials"
+                                value={materialInput}
+                                onChange={(e) => setMaterialInput(e.target.value)}
+                                onKeyDown={handleMaterialKeyPress}
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                                placeholder="Add material"
+                              />
+                              <button
+                                type="button"
+                                onClick={addMaterial}
+                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                              >
+                                Add
+                              </button>
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {supplier.materials.map((material) => (
+                                <span 
+                                  key={material} 
+                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                >
+                                  {material}
+                                  <button 
+                                    type="button"
+                                    onClick={() => removeMaterial(material)}
+                                    className="ml-1 text-blue-600 hover:text-blue-900"
+                                  >
+                                    <XMarkIcon className="h-3 w-3" />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </form>

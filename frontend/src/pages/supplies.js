@@ -144,6 +144,9 @@ function Suppliers() {
                   Name
                 </th>
                 <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
+                  Material
+                </th>
+                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
                   Contact
                 </th>
                 <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
@@ -182,6 +185,9 @@ function Suppliers() {
                   <tr key={element._id}>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-900">
                       {element.name}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                      {element.materials?.join(", ") || "N/A"}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                       {element.contact}
