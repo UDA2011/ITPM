@@ -39,32 +39,42 @@ const inventorySchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['low stock', 'out of stock', 'in stock'],
-    default: 'in stock'
+    enum: ['low_stock', 'out_of_stock', 'in_stock'],
+    default: 'in_stock'
   }
 }, {
   timestamps: true
 });
 
-// Pre-save hook to calculate value and set status
+// Improved pre-save hook
 inventorySchema.pre('save', function(next) {
-  // Calculate value if not set
+  // Calculate value if price or quantity changes
   if (this.isModified('price') || this.isModified('quantity')) {
     this.value = this.price * this.quantity;
   }
 
-  // Set currentQty to match quantity for new items
+  // For new items
   if (this.isNew) {
     this.currentQty = this.quantity;
-  }
-
-  // Auto-update status based on quantity
-  if (this.currentQty <= 0) {
-    this.status = 'out of stock';
-  } else if (this.currentQty < 10) { // Assuming 10 is the threshold for low stock
-    this.status = 'low stock';
-  } else {
-    this.status = 'in stock';
+    // Only set default status if not explicitly provided
+    if (!this.isModified('status')) {
+      this.status = 'in_stock';
+    }
+  } 
+  // For existing items
+  else {
+    // Auto-update status ONLY when currentQty changes
+    if (this.isModified('currentQty')) {
+      if (this.currentQty <= 0) {
+        this.status = 'out_of_stock';
+      } else if (this.currentQty < 10) {
+        this.status = 'low_stock';
+      } else {
+        this.status = 'in_stock';
+      }
+    }
+    // If status was manually modified, preserve it
+    // No need for else-if, Mongoose will keep the modified value
   }
 
   next();
