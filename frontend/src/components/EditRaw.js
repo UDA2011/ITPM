@@ -7,6 +7,7 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
     price: "",
     quantity: "",
     value: "",
+    status: "in_stock"
   });
   const [errors, setErrors] = useState({
     name: "",
@@ -22,6 +23,12 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
     "Additives & Enhancers"
   ];
 
+  const statusOptions = [
+    { value: 'in_stock', label: 'In Stock' },
+    { value: 'low_stock', label: 'Low Stock' },
+    { value: 'out_of_stock', label: 'Out of Stock' }
+  ];
+
   useEffect(() => {
     if (updateProduct) {
       setProduct({
@@ -30,6 +37,7 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
         price: updateProduct.price?.toString() || "",
         quantity: updateProduct.quantity?.toString() || "",
         value: updateProduct.value?.toString() || "",
+        status: updateProduct.status || "in_stock"
       });
     }
   }, [updateProduct]);
@@ -113,7 +121,6 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
     const { name, value } = e.target;
     
     if (name === "name") {
-      // Limit input to 20 characters
       const trimmedValue = value.slice(0, 20);
       const error = validateName(trimmedValue);
       setErrors(prev => ({ ...prev, [name]: error }));
@@ -123,7 +130,7 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
       return;
     }
     
-    if (name === "category") {
+    if (name === "category" || name === "status") {
       setProduct(prev => ({ ...prev, [name]: value }));
       return;
     }
@@ -132,7 +139,6 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate all fields
     const nameError = validateName(product.name);
     const priceError = validatePrice(product.price);
     const quantityError = validateQuantity(product.quantity);
@@ -153,7 +159,8 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
         category: product.category,
         price: parseFloat(product.price),
         quantity: parseInt(product.quantity),
-        value: parseFloat(product.value) || 0
+        value: parseFloat(product.value) || 0,
+        status: product.status
       };
       
       const response = await fetch(`http://localhost:4000/api/inventory/${updateProduct._id}`, {
@@ -241,6 +248,26 @@ function EditRaw({ updateProduct, setShowUpdateModal, refreshData, onClose }) {
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="status">
+              Status
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={product.status}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
