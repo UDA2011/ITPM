@@ -8,7 +8,7 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
     contact: "",
     email: "",
     address: "",
-    unit: "",
+    unit: "kg",
     deliveryTime: 0,
     cost: 0,
     historicalPerformance: 0,
@@ -17,36 +17,52 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
     materials: []
   });
 
-  const [materialInput, setMaterialInput] = useState("");
+  const [materialInput, setMaterialInput] = useState({
+    name: "",
+    cost: 0,
+    availableQuantity: 0,
+    unit: "kg"
+  });
+  
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
   // Add material to the list
   const addMaterial = () => {
-    if (materialInput.trim() && !supplier.materials.includes(materialInput.trim())) {
+    if (materialInput.name.trim()) {
       setSupplier({
         ...supplier,
-        materials: [...supplier.materials, materialInput.trim()]
+        materials: [...supplier.materials, {
+          name: materialInput.name.trim(),
+          cost: Number(materialInput.cost),
+          availableQuantity: Number(materialInput.availableQuantity),
+          unit: materialInput.unit
+        }]
       });
-      setMaterialInput("");
+      setMaterialInput({
+        name: "",
+        cost: 0,
+        availableQuantity: 0,
+        unit: "kg"
+      });
     }
   };
 
   // Remove material from the list
-  const removeMaterial = (materialToRemove) => {
+  const removeMaterial = (indexToRemove) => {
     setSupplier({
       ...supplier,
-      materials: supplier.materials.filter(m => m !== materialToRemove)
+      materials: supplier.materials.filter((_, index) => index !== indexToRemove)
     });
   };
 
-  // Handle key press for material input
-  const handleMaterialKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addMaterial();
-    }
+  // Handle material input change
+  const handleMaterialInputChange = (key, value) => {
+    setMaterialInput({
+      ...materialInput,
+      [key]: value
+    });
   };
 
   // Validation function
@@ -70,11 +86,24 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
     if (supplier.supplierRating < 0 || supplier.supplierRating > 5) 
       newErrors.supplierRating = "Must be between 0 and 5";
 
+    // Validate materials
+    supplier.materials.forEach((material, index) => {
+      if (!material.name.trim()) {
+        newErrors[`materialName_${index}`] = "Material name is required";
+      }
+      if (material.cost < 0) {
+        newErrors[`materialCost_${index}`] = "Material cost cannot be negative";
+      }
+      if (material.availableQuantity < 0) {
+        newErrors[`materialQuantity_${index}`] = "Quantity cannot be negative";
+      }
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handling Input Change for input fields
+  // Handling Input Change for supplier fields
   const handleInputChange = (key, value) => {
     setSupplier({ ...supplier, [key]: value });
     // Clear error when user starts typing
@@ -84,32 +113,40 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
   };
 
   // POST Data to add a new supplier
-  const addSupplier = () => {
-    if (!validate()) return;
+ // In your addSupplier function, add more detailed error logging:
+const addSupplier = () => {
+  if (!validate()) return;
 
-    fetch("http://localhost:4000/api/suppliers/suppliers", {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(supplier),
+  console.log("Submitting supplier data:", supplier); // Log the data being sent
+
+  fetch("http://localhost:4000/api/suppliers/suppliers", {
+    method: "POST",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify(supplier),
+  })
+    .then((response) => {
+      console.log("Response status:", response.status); // Log status code
+      if (!response.ok) {
+        return response.json().then(errData => {
+          console.error("Server error details:", errData); // Log server error details
+          throw new Error(`Server responded with ${response.status}: ${JSON.stringify(errData)}`);
+        });
+      }
+      return response.json();
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        alert("Supplier added successfully!");
-        handlePageUpdate(); // Refresh the supplier list
-        addSupplierModalSetting(); // Close the modal
-      })
-      .catch((err) => {
-        console.error("Error adding supplier:", err);
-        alert("Failed to add supplier. Please try again.");
-      });
-  };
+    .then((data) => {
+      console.log("Success response:", data); // Log success data
+      alert("Supplier added successfully!");
+      handlePageUpdate();
+      addSupplierModalSetting();
+    })
+    .catch((err) => {
+      console.error("Full error details:", err); // More detailed error logging
+      alert(`Failed to add supplier: ${err.message}`);
+    });
+};
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -401,43 +438,72 @@ export default function AddSupplier({ addSupplierModalSetting, handlePageUpdate 
 
                           {/* Materials Input */}
                           <div className="sm:col-span-2">
-                            <label htmlFor="materials" className="block mb-2 text-sm font-medium text-gray-900">
+                            <label className="block mb-2 text-sm font-medium text-gray-900">
                               Materials
                             </label>
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                name="materials"
-                                id="materials"
-                                value={materialInput}
-                                onChange={(e) => setMaterialInput(e.target.value)}
-                                onKeyDown={handleMaterialKeyPress}
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                                placeholder="Add material"
-                              />
+                            <div className="grid gap-4 mb-4 sm:grid-cols-3">
+                              <div>
+                                <label htmlFor="materialName" className="block mb-2 text-sm font-medium text-gray-900">Name</label>
+                                <input
+                                  type="text"
+                                  id="materialName"
+                                  value={materialInput.name}
+                                  onChange={(e) => handleMaterialInputChange("name", e.target.value)}
+                                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                                  placeholder="Material name"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="materialCost" className="block mb-2 text-sm font-medium text-gray-900">Cost</label>
+                                <input
+                                  type="number"
+                                  id="materialCost"
+                                  value={materialInput.cost}
+                                  onChange={(e) => handleMaterialInputChange("cost", e.target.value)}
+                                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                                  placeholder="Cost"
+                                  min="0"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="materialQuantity" className="block mb-2 text-sm font-medium text-gray-900">Quantity</label>
+                                <input
+                                  type="number"
+                                  id="materialQuantity"
+                                  value={materialInput.availableQuantity}
+                                  onChange={(e) => handleMaterialInputChange("availableQuantity", e.target.value)}
+                                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                                  placeholder="Quantity"
+                                  min="0"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex justify-end mb-4">
                               <button
                                 type="button"
                                 onClick={addMaterial}
                                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                               >
-                                Add
+                                Add Material
                               </button>
                             </div>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              {supplier.materials.map((material) => (
-                                <span 
-                                  key={material} 
-                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                                >
-                                  {material}
+                            
+                            {/* Display added materials */}
+                            <div className="space-y-2">
+                              {supplier.materials.map((material, index) => (
+                                <div key={index} className="flex justify-between items-center p-2 bg-gray-100 rounded">
+                                  <div>
+                                    <span className="font-medium">{material.name}</span>
+                                    <span className="text-sm text-gray-600 ml-2">(Cost: {material.cost}, Qty: {material.availableQuantity} {material.unit})</span>
+                                  </div>
                                   <button 
                                     type="button"
-                                    onClick={() => removeMaterial(material)}
-                                    className="ml-1 text-blue-600 hover:text-blue-900"
+                                    onClick={() => removeMaterial(index)}
+                                    className="text-red-600 hover:text-red-900"
                                   >
-                                    <XMarkIcon className="h-3 w-3" />
+                                    <XMarkIcon className="h-5 w-5" />
                                   </button>
-                                </span>
+                                </div>
                               ))}
                             </div>
                           </div>

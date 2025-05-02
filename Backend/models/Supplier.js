@@ -1,52 +1,67 @@
+// models/Supplier.js
 const mongoose = require("mongoose");
+
+const materialSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  cost: {
+    type: Number,
+    required: true
+  },
+  availableQuantity: {
+    type: Number,
+    required: true
+  },
+  unit: {
+    type: String,
+    default: "kg"
+  }
+});
 
 const supplierSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    required: true
   },
   contact: {
     type: String,
-    required: true,
+    required: true
   },
   email: {
     type: String,
-    required: true,
-    unique: true,
+    required: true
   },
   address: {
     type: String,
-    required: true,
-  },
-  
-  deliveryTime: {
-    type: Number, // Assuming delivery time is in days
-    default: 0,
+    required: true
   },
   unit: {
     type: String,
-    required: true,
+    default: "kg"
   },
-  cost: {
-    type: Number,
-    default: 0,
+  deliveryTime: {
+    type: Number, // in days
+    required: true
   },
   historicalPerformance: {
     type: Number,
-    default: 0,
+    min: 0,
+    max: 100,
+    default: 80
   },
   distance: {
-    type: Number, // Assuming distance is in kilometers
-    default: 0,
+    type: Number, // in km
+    required: true
   },
   supplierRating: {
     type: Number,
-    default: 0,
+    min: 0,
+    max: 5,
+    default: 3
   },
-  materials: {
-    type: [String], // Array of material names
-    default: [],
-  },
-});
+  materials: [materialSchema]
+}, { timestamps: true });
 
 module.exports = mongoose.model("Supplier", supplierSchema);
