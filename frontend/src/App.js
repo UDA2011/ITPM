@@ -19,6 +19,16 @@ import TaskForm from './components/TaskForm';
 import TaskList from './pages/TaskList';
 import "./index.css";
 
+
+import TasksHome from './pages/TasksHome';
+import ShowTask from './pages/ShowTask';
+import CreateTask from './pages/CreateTask';
+import EditTask from './pages/EditTask';
+import DeleteTask from './pages/DeleteTask';
+import IncompleteTasks from './pages/IncompleteTasks';
+import OverdueTasks from './pages/OverdueTasks';
+import UrgentTasks from './pages/UrgentTasks';
+
 const App = () => {
   const [user, setUser] = useState("");
   const [loader, setLoader] = useState(true);
@@ -79,6 +89,14 @@ const App = () => {
             <Route path="task/edit/:id" element={<TaskForm />} />
             <Route path="/Employee/Managers" element={<Managers />} />
             <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
+            <Route path='/taskhome' element={<TasksHome />} />
+            <Route path='/tasks/details/:id' element={<ShowTask />} />
+            <Route path='/tasks/create' element={<CreateTask />} />
+            <Route path='/tasks/edit/:id' element={<EditTask />} />
+            <Route path='/tasks/delete/:id' element={<DeleteTask />} />
+            <Route path='/tasks/IncompleteTasks' element={<IncompleteTasks />} />
+            <Route path='/tasks/OverdueTasks' element={<OverdueTasks />} />
+            <Route path='/tasks/UrgentTasks' element={<UrgentTasks />} />
           </Route>
           <Route path="*" element={<NoPageFound />} />
         </Routes>

@@ -8,6 +8,7 @@ const supplierRoutes = require("./router/SupplierRoute");
 const inventoryRoutes = require("./router/inventoryRoutes");
 const endProductRoutes = require('./router/endProductRoutes');
 const requestRoutes = require('./router/requestRoutes');
+const tasksRoute = require('./router/tasksRoute');
 const User = require("./models/users");
 
 const app = express();
@@ -18,13 +19,18 @@ main().catch((err) => console.error("MongoDB connection error:", err));
 
 // Middleware
 app.use(express.json()); // For parsing JSON request bodies
-app.use(cors()); 
+app.use(cors({
+  origin: 'http://localhost:3000', // Your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type']
+}));
 
 // Routes
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use('/api/endproducts', endProductRoutes);
 app.use('/api/requests', requestRoutes);
+app.use('/api/task', tasksRoute);
 
 // Simplified login (without JWT)
 app.post("/api/login", async (req, res) => {

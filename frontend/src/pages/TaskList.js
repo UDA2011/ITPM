@@ -4,7 +4,7 @@ import axios from 'axios';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import TaskForm from '../components/TaskForm';
-//import './TaskList.css';
+import './TaskList.css';
 
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
