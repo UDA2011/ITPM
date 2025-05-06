@@ -2,7 +2,6 @@ const express = require("express");
 const { main } = require("./models/index"); // Import the main function
 const supplierRoutes = require("./router/SupplierRoute");
 const inventoryRoutes = require("./router/inventoryRoutes");
-const cors = require("cors");
 const User = require("./models/users");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
@@ -17,13 +16,18 @@ const PORT = process.env.PORT || 4000;
 main().catch((err) => console.error("MongoDB connection error:", err));
 
 // Middleware
-app.use(express.json());
-app.use(cors());
+app.use(express.json()); // For parsing JSON request bodies
+app.use(cors({
+  origin: 'http://localhost:3000', // Your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type']
 
 // Routes
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/inventory", inventoryRoutes);
-
+app.use('/api/endproducts', endProductRoutes);
+app.use('/api/requests', requestRoutes);
+app.use('/api/task', tasksRoute);
 // ------------- User Routes --------------
 const userRouter = express.Router();
 
