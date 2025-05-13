@@ -1,6 +1,6 @@
 import { Fragment, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { PencilIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, XMarkIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 export default function EditSupplier({ supplier, editSupplierModalSetting, handlePageUpdate }) {
   const [updatedSupplier, setUpdatedSupplier] = useState({
@@ -14,11 +14,56 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
     historicalPerformance: supplier.historicalPerformance,
     distance: supplier.distance,
     supplierRating: supplier.supplierRating,
+    materials: supplier.materials || []
+  });
+
+  const [materialInput, setMaterialInput] = useState({
+    name: "",
+    cost: 0,
+    availableQuantity: 0,
+    unit: "kg"
   });
 
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
+
+  // Add material to the list
+  const addMaterial = () => {
+    if (materialInput.name.trim()) {
+      setUpdatedSupplier({
+        ...updatedSupplier,
+        materials: [...updatedSupplier.materials, {
+          name: materialInput.name.trim(),
+          cost: Number(materialInput.cost),
+          availableQuantity: Number(materialInput.availableQuantity),
+          unit: materialInput.unit
+        }]
+      });
+      setMaterialInput({
+        name: "",
+        cost: 0,
+        availableQuantity: 0,
+        unit: "kg"
+      });
+    }
+  };
+
+  // Remove material from the list
+  const removeMaterial = (indexToRemove) => {
+    setUpdatedSupplier({
+      ...updatedSupplier,
+      materials: updatedSupplier.materials.filter((_, index) => index !== indexToRemove)
+    });
+  };
+
+  // Handle material input change
+  const handleMaterialInputChange = (key, value) => {
+    setMaterialInput({
+      ...materialInput,
+      [key]: value
+    });
+  };
 
   // Validation function
   const validate = () => {
@@ -41,11 +86,24 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
     if (updatedSupplier.supplierRating < 0 || updatedSupplier.supplierRating > 5) 
       newErrors.supplierRating = "Must be between 0 and 5";
 
+    // Validate materials
+    updatedSupplier.materials.forEach((material, index) => {
+      if (!material.name.trim()) {
+        newErrors[`materialName_${index}`] = "Material name is required";
+      }
+      if (material.cost < 0) {
+        newErrors[`materialCost_${index}`] = "Material cost cannot be negative";
+      }
+      if (material.availableQuantity < 0) {
+        newErrors[`materialQuantity_${index}`] = "Quantity cannot be negative";
+      }
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handling Input Change for input fields
+  // Handling Input Change for supplier fields
   const handleInputChange = (key, value) => {
     setUpdatedSupplier({ ...updatedSupplier, [key]: value });
     // Clear error when user starts typing
@@ -58,6 +116,8 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
   const updateSupplier = () => {
     if (!validate()) return;
 
+    console.log("Updating supplier data:", updatedSupplier);
+
     fetch(`http://localhost:4000/api/suppliers/suppliers/${supplier._id}`, {
       method: "PUT",
       headers: {
@@ -66,24 +126,28 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
       body: JSON.stringify(updatedSupplier),
     })
       .then((response) => {
+        console.log("Response status:", response.status);
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          return response.json().then(errData => {
+            console.error("Server error details:", errData);
+            throw new Error(`Server responded with ${response.status}: ${JSON.stringify(errData)}`);
+          });
         }
         return response.json();
       })
       .then((data) => {
+        console.log("Success response:", data);
         alert("Supplier updated successfully!");
-        handlePageUpdate(); // Refresh the supplier list
-        editSupplierModalSetting(); // Close the modal
+        handlePageUpdate();
+        editSupplierModalSetting();
       })
       .catch((err) => {
-        console.error("Error updating supplier:", err);
-        alert("Failed to update supplier. Please try again.");
+        console.error("Full error details:", err);
+        alert(`Failed to update supplier: ${err.message}`);
       });
   };
 
   return (
-    // Modal
     <Transition.Root show={open} as={Fragment}>
       <Dialog
         as="div"
@@ -123,7 +187,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                         aria-hidden="true"
                       />
                     </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                       <Dialog.Title
                         as="h3"
                         className="text-lg py-4 font-semibold leading-6 text-gray-900"
@@ -136,7 +200,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="name"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Name
                             </label>
@@ -148,7 +212,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("name", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.name ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.name ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Supplier Name"
                               required
                             />
@@ -159,7 +223,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="contact"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Contact
                             </label>
@@ -171,7 +235,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("contact", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.contact ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.contact ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Contact Number"
                               required
                             />
@@ -182,7 +246,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="email"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Email
                             </label>
@@ -194,7 +258,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("email", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.email ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.email ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Email Address"
                               required
                             />
@@ -205,7 +269,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="address"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Address
                             </label>
@@ -217,7 +281,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("address", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.address ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.address ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Address"
                               required
                             />
@@ -228,7 +292,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="unit"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Unit
                             </label>
@@ -240,7 +304,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("unit", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.unit ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.unit ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Unit"
                               required
                             />
@@ -251,7 +315,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="deliveryTime"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Delivery Time (Days)
                             </label>
@@ -263,7 +327,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("deliveryTime", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.deliveryTime ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.deliveryTime ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Delivery Time"
                               min="0"
                               required
@@ -275,7 +339,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="cost"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Cost
                             </label>
@@ -287,7 +351,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("cost", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.cost ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.cost ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Cost"
                               min="0"
                               required
@@ -299,7 +363,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="historicalPerformance"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Historical Performance
                             </label>
@@ -311,7 +375,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("historicalPerformance", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.historicalPerformance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.historicalPerformance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Historical Performance"
                               min="0"
                               max="5"
@@ -325,7 +389,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="distance"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Distance (km)
                             </label>
@@ -337,7 +401,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("distance", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.distance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.distance ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Distance"
                               min="0"
                               required
@@ -349,7 +413,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                           <div>
                             <label
                               htmlFor="supplierRating"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              className="block mb-2 text-sm font-medium text-gray-900"
                             >
                               Supplier Rating
                             </label>
@@ -361,7 +425,7 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               onChange={(e) =>
                                 handleInputChange("supplierRating", e.target.value)
                               }
-                              className={`bg-gray-50 border ${errors.supplierRating ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+                              className={`bg-gray-50 border ${errors.supplierRating ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5`}
                               placeholder="Supplier Rating"
                               min="0"
                               max="5"
@@ -369,6 +433,78 @@ export default function EditSupplier({ supplier, editSupplierModalSetting, handl
                               required
                             />
                             {errors.supplierRating && <p className="mt-1 text-sm text-red-600">{errors.supplierRating}</p>}
+                          </div>
+
+                          {/* Materials Input */}
+                          <div className="sm:col-span-2">
+                            <label className="block mb-2 text-sm font-medium text-gray-900">
+                              Materials
+                            </label>
+                            <div className="grid gap-4 mb-4 sm:grid-cols-3">
+                              <div>
+                                <label htmlFor="materialName" className="block mb-2 text-sm font-medium text-gray-900">Name</label>
+                                <input
+                                  type="text"
+                                  id="materialName"
+                                  value={materialInput.name}
+                                  onChange={(e) => handleMaterialInputChange("name", e.target.value)}
+                                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                                  placeholder="Material name"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="materialCost" className="block mb-2 text-sm font-medium text-gray-900">Cost</label>
+                                <input
+                                  type="number"
+                                  id="materialCost"
+                                  value={materialInput.cost}
+                                  onChange={(e) => handleMaterialInputChange("cost", e.target.value)}
+                                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                                  placeholder="Cost"
+                                  min="0"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="materialQuantity" className="block mb-2 text-sm font-medium text-gray-900">Quantity</label>
+                                <input
+                                  type="number"
+                                  id="materialQuantity"
+                                  value={materialInput.availableQuantity}
+                                  onChange={(e) => handleMaterialInputChange("availableQuantity", e.target.value)}
+                                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                                  placeholder="Quantity"
+                                  min="0"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex justify-end mb-4">
+                              <button
+                                type="button"
+                                onClick={addMaterial}
+                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                              >
+                                Add Material
+                              </button>
+                            </div>
+                            
+                            {/* Display added materials */}
+                            <div className="space-y-2">
+                              {updatedSupplier.materials.map((material, index) => (
+                                <div key={index} className="flex justify-between items-center p-2 bg-gray-100 rounded">
+                                  <div>
+                                    <span className="font-medium">{material.name}</span>
+                                    <span className="text-sm text-gray-600 ml-2">(Cost: {material.cost}, Qty: {material.availableQuantity} {material.unit})</span>
+                                  </div>
+                                  <button 
+                                    type="button"
+                                    onClick={() => removeMaterial(index)}
+                                    className="text-red-600 hover:text-red-900"
+                                  >
+                                    <XMarkIcon className="h-5 w-5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </form>

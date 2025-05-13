@@ -1,11 +1,16 @@
 const express = require("express");
-const { main } = require("./models/index"); // Import the main function
+const dotenv = require("dotenv");
+const cors = require("cors");
+const bcrypt = require("bcrypt");
+
+const { main } = require("./models/index");
 const supplierRoutes = require("./router/SupplierRoute");
 const inventoryRoutes = require("./router/inventoryRoutes");
-const cors = require("cors");
+const endProductRoutes = require("./router/endProductRoutes");
+const requestRoutes = require("./router/requestRoutes");
+const tasksRoute = require("./router/tasksRoute");
+
 const User = require("./models/users");
-const dotenv = require("dotenv");
-const bcrypt = require("bcrypt");
 
 // Load environment variables
 dotenv.config();
@@ -20,11 +25,22 @@ main()
 
 // Middleware
 app.use(express.json());
-app.use(cors()); // Allow all origins; can be restricted if needed
 
-// Routes
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type']
+}));
+
+
+// ---------------------- Routes ----------------------
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use("/api/endproducts", endProductRoutes);
+app.use("/api/requests", requestRoutes);
+app.use("/api/task", tasksRoute);
+
 
 // ------------- User Routes --------------
 // CREATE - User Registration
@@ -197,5 +213,5 @@ app.get("/testget", async (req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(Server is running on port ${PORT});
 });
