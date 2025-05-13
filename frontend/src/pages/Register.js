@@ -293,8 +293,6 @@ function Register() {
               >
                 <option value="Manager">Manager</option>
                 <option value="Factory Worker">Factory Worker</option>
-                <option value="Supervisor">Supervisor</option>
-                <option value="Accountant">Accountant</option>
               </select>
             </div>
 
