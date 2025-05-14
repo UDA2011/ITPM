@@ -24,13 +24,13 @@ export default function Header() {
                 {/* Logo Section */}
                 <div className="flex items-center">
                   <Link to="/" className="flex-shrink-0 group">
-                    <div className="flex items-center gap-3 transition-transform group-hover:scale-105">
+                    <div className="flex items-center gap-3 bg-gray-800 bg-opacity-50 px-3 py-2 rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
                       <img
-                        className="h-9 w-9 rounded-full"
+                        className="h-12 w-12 rounded-full ring-1 ring-white"
                         src={require("../assets/logo.png")}
-                        alt="Inventory Management System"
+                        alt="Animal Nutrition & Health"
                       />
-                      <span className="font-semibold text-xl text-white tracking-tight">
+                      <span className="font-bold text-xl text-white tracking-tight">
                         ANIMAL NUTRITION & HEALTH
                       </span>
                     </div>
