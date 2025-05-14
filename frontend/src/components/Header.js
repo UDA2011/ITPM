@@ -22,7 +22,7 @@ export default function Header() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex h-16 items-center justify-between">
                 {/* Logo Section */}
-                <div className="flex items-center">
+                <div className="flex items-center -ml-2">
                   <Link to="/" className="flex-shrink-0 group">
                     <div className="flex items-center gap-3 bg-gray-800 bg-opacity-50 px-3 py-2 rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
                       <img
