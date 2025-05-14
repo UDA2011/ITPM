@@ -46,7 +46,7 @@ export default function Header() {
                         src={require("../assets/logo.png")}
                         alt="Animal Nutrition & Health"
                       />
-                      <span className="font-bold text-xl text-white tracking-tight font-sans">
+                      <span className="font-bold text-lg text-white tracking-tight font-sans">
                         ANIMAL NUTRITION & HEALTH
                       </span>
                     </div>
