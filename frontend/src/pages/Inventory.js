@@ -231,7 +231,7 @@ function Inventory() {
     doc.setTextColor(100);
     doc.text("Notes:", 14, finalY);
     doc.text("• This report is for internal use only.", 14, finalY + 5);
-    doc.text("• All values are in Indian Rupees (Rs.).", 14, finalY + 10);
+    doc.text("• All values are in Sri Lankan Rupees (Rs.).", 14, finalY + 10);
     doc.text("• Quantities are accurate as of the report generation time.", 14, finalY + 15);
 
     doc.save(
