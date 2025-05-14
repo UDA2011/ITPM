@@ -1,10 +1,14 @@
-import { Fragment, useContext } from "react";
+import { Fragment, useContext, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, BellIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, BellIcon, MagnifyingGlassIcon, XMarkIcon, MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../AuthContext";
 import { Link } from "react-router-dom";
 
-const userNavigation = [{ name: "Sign out", href: "./login" }];
+const userNavigation = [
+  { name: "Profile", href: "./profile" },
+  { name: "Settings", href: "./settings" },
+  { name: "Sign out", href: "./login" },
+];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -12,25 +16,37 @@ function classNames(...classes) {
 
 export default function Header() {
   const authContext = useContext(AuthContext);
-  const localStorageData = JSON.parse(localStorage.getItem("user"));
+  const localStorageData = JSON.parse(localStorage.getItem("user")) || {
+    imageUrl: "https://via.placeholder.com/40",
+    firstName: "Guest",
+    lastName: "",
+    email: "guest@example.com",
+  };
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle("dark");
+  };
 
   return (
     <div className="min-h-full">
-      <Disclosure as="nav" className="bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-lg">
+      <Disclosure as="nav" className="bg-gradient-to-r from-teal-700 to-indigo-800 bg-opacity-95 backdrop-blur-lg shadow-xl">
         {({ open }) => (
           <>
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex h-16 items-center justify-between">
                 {/* Logo Section */}
-                <div className="flex items-center -ml-2">
+                <div className="flex items-center">
                   <Link to="/" className="flex-shrink-0 group">
-                    <div className="flex items-center gap-3 bg-gray-800 bg-opacity-50 px-3 py-2 rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                    <div className="flex items-center gap-3 bg-teal-800 bg-opacity-60 px-3 py-2 rounded-xl transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(45,212,191,0.7)]">
                       <img
-                        className="h-12 w-12 rounded-full ring-1 ring-white"
+                        className="h-12 w-12 rounded-full ring-2 ring-teal-400 transition-transform duration-300 group-hover:scale-110"
                         src={require("../assets/logo.png")}
                         alt="Animal Nutrition & Health"
                       />
-                      <span className="font-bold text-xl text-white tracking-tight">
+                      <span className="font-bold text-xl text-white tracking-tight font-sans">
                         ANIMAL NUTRITION & HEALTH
                       </span>
                     </div>
@@ -39,32 +55,63 @@ export default function Header() {
 
                 {/* Right Section: Icons and Profile */}
                 <div className="hidden md:flex items-center space-x-4">
-                  {/* Search Icon */}
-                  <button
-                    type="button"
-                    className="p-2 text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full transition-colors duration-200"
-                    title="Search"
-                  >
-                    <span className="sr-only">Search</span>
-                    <MagnifyingGlassIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="p-2 text-teal-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-teal-400 rounded-full transition-colors duration-200"
+                      title="Search"
+                      onClick={() => setIsSearchOpen(!isSearchOpen)}
+                    >
+                      <span className="sr-only">Search</span>
+                      <MagnifyingGlassIcon className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                    {isSearchOpen && (
+                      <div className="absolute right-0 mt-2 w-64">
+                        <input
+                          type="text"
+                          placeholder="Search..."
+                          className="w-full px-4 py-2 rounded-lg bg-teal-800 text-white border border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                          autoFocus
+                        />
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Notification Bell */}
+                  {/* Notification Bell with Badge */}
                   <button
                     type="button"
-                    className="p-2 text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full transition-colors duration-200"
+                    className="relative p-2 text-teal-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-teal-400 rounded-full transition-colors duration-200"
                     title="Notifications"
                   >
                     <span className="sr-only">View notifications</span>
                     <BellIcon className="h-6 w-6" aria-hidden="true" />
+                    <span className="absolute top-1 right-1 h-2 w-2 bg-rose-500 rounded-full"></span>
+                  </button>
+
+                  {/* Theme Toggle */}
+                  <button
+                    type="button"
+                    className="p-2 text-teal-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-teal-400 rounded-full transition-colors duration-200"
+                    title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                    onClick={toggleTheme}
+                  >
+                    <span className="sr-only">Toggle theme</span>
+                    {isDarkMode ? (
+                      <SunIcon className="h-6 w-6" aria-hidden="true" />
+                    ) : (
+                      <MoonIcon className="h-6 w-6" aria-hidden="true" />
+                    )}
                   </button>
 
                   {/* Profile Dropdown */}
                   <Menu as="div" className="relative">
-                    <Menu.Button className="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200">
-                      <span className="sr-only">Open user menu</span>
+                    <Menu.Button
+                      className="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-teal-700 transition-all duration-200"
+                      aria-label="Open user menu"
+                    >
                       <img
-                        className="h-9 w-9 rounded-full ring-2 ring-gray-700 hover:ring-blue-500 transition-all duration-200"
+                        className="h-9 w-9 rounded-full ring-2 ring-teal-600 hover:ring-teal-400 transition-all duration-200"
                         src={localStorageData.imageUrl}
                         alt="Profile"
                       />
@@ -78,17 +125,17 @@ export default function Header() {
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg bg-teal-800 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none">
                         {userNavigation.map((item) => (
                           <Menu.Item key={item.name}>
                             {({ active }) => (
                               <Link
                                 to={item.href}
                                 className={classNames(
-                                  active ? "bg-gray-100" : "",
-                                  "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-150"
+                                  active ? "bg-teal-700" : "",
+                                  "block px-4 py-2 text-sm text-teal-100 hover:bg-teal-700 hover:text-white rounded-lg transition-colors duration-150"
                                 )}
-                                onClick={() => authContext.signout()}
+                                onClick={item.name === "Sign out" ? () => authContext.signout() : undefined}
                               >
                                 {item.name}
                               </Link>
@@ -102,8 +149,10 @@ export default function Header() {
 
                 {/* Mobile Menu Button */}
                 <div className="-mr-2 flex md:hidden">
-                  <Disclosure.Button className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-                    <span className="sr-only">Open main menu</span>
+                  <Disclosure.Button
+                    className="p-2 text-teal-300 hover:text-white hover:bg-teal-700 rounded-full focus:outline-none focus:ring-2 focus:ring-teal-400 transition-colors duration-200"
+                    aria-label="Open main menu"
+                  >
                     {open ? (
                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                     ) : (
@@ -116,10 +165,10 @@ export default function Header() {
 
             {/* Mobile Menu Panel */}
             <Disclosure.Panel className="md:hidden">
-              <div className="border-t border-gray-700 pt-4 pb-4 bg-gray-800 bg-opacity-90">
+              <div className="border-t border-teal-600 pt-4 pb-4 bg-teal-800 bg-opacity-95">
                 <div className="flex items-center px-5">
                   <img
-                    className="h-10 w-10 rounded-full ring-2 ring-gray-600"
+                    className="h-10 w-10 rounded-full ring-2 ring-teal-600"
                     src={localStorageData.imageUrl}
                     alt="Profile"
                   />
@@ -127,30 +176,55 @@ export default function Header() {
                     <div className="text-base font-medium text-white">
                       {localStorageData.firstName + " " + localStorageData.lastName}
                     </div>
-                    <div className="text-sm font-medium text-gray-400">
+                    <div className="text-sm font-medium text-teal-300">
                       {localStorageData.email}
                     </div>
                   </div>
                   <button
                     type="button"
-                    className="ml-auto p-2 text-gray-300 hover:text-white rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                    className="ml-auto p-2 text-teal-300 hover:text-white rounded-full focus:outline-none focus:ring-2 focus:ring-teal-400 transition-colors duration-200"
                     title="Notifications"
                   >
                     <span className="sr-only">View notifications</span>
                     <BellIcon className="h-6 w-6" aria-hidden="true" />
+                    <span className="absolute top-1 right-1 h-2 w-2 bg-rose-500 rounded-full"></span>
                   </button>
                 </div>
                 <div className="mt-4 space-y-2 px-3">
+                  <div className="relative mb-4">
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      className="w-full px-4 py-2 rounded-lg bg-teal-700 text-white border border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    />
+                  </div>
                   {userNavigation.map((item) => (
                     <Link
                       key={item.name}
                       to={item.href}
-                      className="block rounded-lg px-4 py-3 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-200"
-                      onClick={() => authContext.signout()}
+                      className="block rounded-lg px-4 py-3 text-base font-medium text-teal-200 hover:bg-teal-700 hover:text-white transition-all duration-200"
+                      onClick={item.name === "Sign out" ? () => authContext.signout() : undefined}
                     >
                       {item.name}
                     </Link>
                   ))}
+                  <button
+                    type="button"
+                    className="w-full flex items-center px-4 py-3 text-base font-medium text-teal-200 hover:bg-teal-700 hover:text-white rounded-lg transition-all duration-200"
+                    onClick={toggleTheme}
+                  >
+                    {isDarkMode ? (
+                      <>
+                        <SunIcon className="h-5 w-5 mr-2" aria-hidden="true" />
+                        Switch to Light Mode
+                      </>
+                    ) : (
+                      <>
+                        <MoonIcon className="h-5 w-5 mr-2" aria-hidden="true" />
+                        Switch to Dark Mode
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </Disclosure.Panel>
