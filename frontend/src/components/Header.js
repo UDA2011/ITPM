@@ -31,7 +31,7 @@ export default function Header() {
                         alt="Inventory Management System"
                       />
                       <span className="font-semibold text-xl text-white tracking-tight">
-                        Inventory Management
+                        ANIMAL NUTRITION & HEALTH
                       </span>
                     </div>
                   </Link>
