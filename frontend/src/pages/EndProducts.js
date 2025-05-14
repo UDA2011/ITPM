@@ -156,12 +156,12 @@ function EndProducts() {
         fillColor: [245, 245, 245],
       },
       columnStyles: {
-        0: { cellWidth: 10 },
-        1: { cellWidth: 50 },
-        2: { cellWidth: 40 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 25 },
-        5: { cellWidth: 30 },
+        0: { cellWidth: 25 }, // S/N
+        1: { cellWidth: 25 }, // Product Name
+        2: { cellWidth: 25 }, // Category
+        3: { cellWidth: 25 }, // Price
+        4: { cellWidth: 25 }, // Quantity
+        5: { cellWidth: 25 }, // Value
       },
       didDrawPage: (data) => {
         doc.setFontSize(8);
@@ -308,12 +308,12 @@ function EndProducts() {
               <table className="min-w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">S/N</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Category</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Price</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Quantity</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Value</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">S/N</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Name</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Category</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Price</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Quantity</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Value</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
                   </tr>
                 </thead>
@@ -324,16 +324,16 @@ function EndProducts() {
                         key={product._id}
                         className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200"
                       >
-                        <td className="px-6 py-4 text-sm text-gray-600">{index + 1}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{product.name || "N/A"}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{product.category || "N/A"}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-6 py-4 text-sm text-gray-600 w-1/6 truncate">{index + 1}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 w-1/6 truncate">{product.name || "N/A"}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 w-1/6 truncate">{product.category || "N/A"}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 w-1/6 truncate">
                           Rs. {product.price ? Number(product.price).toFixed(2) : "0.00"}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-6 py-4 text-sm text-gray-600 w-1/6 truncate">
                           {product.quantity || 0} units
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-6 py-4 text-sm text-gray-600 w-1/6 truncate">
                           Rs. {product.value ? Number(product.value).toFixed(2) : "0.00"}
                         </td>
                         <td className="px-6 py-4 flex gap-2">
