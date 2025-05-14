@@ -35,10 +35,10 @@ export default function Header() {
       <Disclosure as="nav" className="bg-gradient-to-r from-teal-700 to-indigo-800 bg-opacity-95 backdrop-blur-lg shadow-xl">
         {({ open }) => (
           <>
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-4"> {/* Reduced padding from px-4 to px-2 */}
               <div className="flex h-16 items-center justify-between">
                 {/* Logo Section */}
-                <div className="flex items-center justify-start">
+                <div className="flex items-center">
                   <Link to="/" className="flex-shrink-0 group">
                     <div className="flex items-center gap-3 bg-teal-800 bg-opacity-60 px-3 py-2 rounded-xl transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(45,212,191,0.7)]">
                       <img
@@ -133,7 +133,7 @@ export default function Header() {
                                 to={item.href}
                                 className={classNames(
                                   active ? "bg-teal-700" : "",
-                                  "block px-4 py-2 text-sm text-teal-100 hover:bg-teal-700 hover:text-white rounded **cut off** rounded-lg transition-colors duration-150"
+                                  "block px-4 py-2 text-sm text-teal-100 hover:bg-teal-700 hover:text-white rounded-lg transition-colors duration-150"
                                 )}
                                 onClick={item.name === "Sign out" ? () => authContext.signout() : undefined}
                               >
