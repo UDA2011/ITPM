@@ -1,6 +1,8 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../AuthContext";
+import signupImage from "../assets/signup.png";
+import logoImage from "../assets/logo.png";
 
 function Login() {
   const [form, setForm] = useState({
@@ -18,36 +20,46 @@ function Login() {
   const loginUser = (e) => {
     e.preventDefault();
 
-    // Check if fields are empty
     if (form.email === "" || form.password === "") {
       alert("Please enter your email and password to proceed.");
       return;
     }
 
-    // Send login request to the backend
-    fetch("http://localhost:4000/api/login", {
+    fetch("http://localhost:4000/api/users/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(form),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((errorData) => {
+            throw new Error(errorData.error || "Login failed");
+          });
+        }
+        return response.json();
+      })
       .then((data) => {
         if (data.error) {
-          alert(data.error); // Show error message if login fails
+          alert(data.error); // Display specific backend error (e.g., "Invalid Credentials")
         } else {
           alert("Successfully logged in!");
-          localStorage.setItem("token", data.token); // Store JWT token
-          localStorage.setItem("user", JSON.stringify(data.user)); // Store user data
-          authContext.signin(data.user._id, () => {
-            navigate("/"); // Redirect to home page after login
-          });
+          localStorage.setItem("user", JSON.stringify(data));
+          const jobPosition = data.jobPosition ? data.jobPosition.toLowerCase() : "";
+          if (jobPosition === "manager") {
+            navigate("/Employee/Managers"); // Match the route in App.js
+          } else if (jobPosition === "factory worker") {
+            navigate("/Employee/Factoryworkers"); // Match the route in App.js
+          } else {
+            navigate("/dashboard"); // Default route for other roles
+          }
+          authContext.signin(data._id, () => {});
         }
       })
       .catch((error) => {
-        console.error("Something went wrong:", error);
-        alert("Something went wrong, please try again.");
+        console.error("Login error:", error.message);
+        alert(`Login failed: ${error.message}`);
       });
   };
 
@@ -55,13 +67,13 @@ function Login() {
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 h-screen items-center place-items-center">
         <div className="flex justify-center">
-          <img src={require("../assets/signup.png")} alt="" />
+          <img src={signupImage} alt="Signup illustration" />
         </div>
         <div className="w-full max-w-md space-y-8 p-10 rounded-lg">
           <div>
             <img
               className="mx-auto h-12 w-auto"
-              src={require("../assets/logo.png")}
+              src={logoImage}
               alt="Your Company"
             />
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">

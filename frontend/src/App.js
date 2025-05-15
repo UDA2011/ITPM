@@ -32,7 +32,18 @@ import UrgentTasks from './pages/UrgentTasks';
 const App = () => {
   const [user, setUser] = useState("");
   const [loader, setLoader] = useState(true);
-  let myLoginUser = JSON.parse(localStorage.getItem("user"));
+
+  // Safely parse localStorage user data
+  let myLoginUser = null;
+  const storedUser = localStorage.getItem("user");
+  if (storedUser && storedUser !== "undefined") {
+    try {
+      myLoginUser = JSON.parse(storedUser);
+    } catch (error) {
+      console.error("Failed to parse user from localStorage:", error);
+      localStorage.removeItem("user"); // Clear invalid data
+    }
+  }
 
   useEffect(() => {
     if (myLoginUser) {
@@ -106,11 +117,3 @@ const App = () => {
 };
 
 export default App;
-
-/*
-
-            <Route path="/Employee/Managers" element={<Managers />} />
-            <Route path="/Employee/Factoryworkers" element={<Factoryworkers />} />
-
-
-*/

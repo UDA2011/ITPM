@@ -1,291 +1,259 @@
 import React, { useContext, useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import AuthContext from "../AuthContext";
-import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-
-ChartJS.register(ArcElement, Tooltip, Legend);
-export const data = {
-  labels: ["Apple", "Knorr", "Shoop", "Green", "Purple", "Orange"],
-  datasets: [
-    {
-      label: "# of Votes",
-      data: [0, 1, 5, 8, 9, 15],
-      backgroundColor: [
-        "rgba(255, 99, 132, 0.2)",
-        "rgba(54, 162, 235, 0.2)",
-        "rgba(255, 206, 86, 0.2)",
-        "rgba(75, 192, 192, 0.2)",
-        "rgba(153, 102, 255, 0.2)",
-        "rgba(255, 159, 64, 0.2)",
-      ],
-      borderColor: [
-        "rgba(255, 99, 132, 1)",
-        "rgba(54, 162, 235, 1)",
-        "rgba(255, 206, 86, 1)",
-        "rgba(75, 192, 192, 1)",
-        "rgba(153, 102, 255, 1)",
-        "rgba(255, 159, 64, 1)",
-      ],
-      borderWidth: 1,
-    },
-  ],
-};
+import axios from 'axios';
 
 function Dashboard() {
-  const [saleAmount, setSaleAmount] = useState("");
-  const [purchaseAmount, setPurchaseAmount] = useState("");
-  const [stores, setStores] = useState([]);
-  const [products, setProducts] = useState([]);
-
-  const [chart, setChart] = useState({
+  const [categoryChartData, setCategoryChartData] = useState({
     options: {
-      chart: {
-        id: "basic-bar",
-      },
-      xaxis: {
-        categories: [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
-        ],
-      },
+      labels: [],
+      responsive: [{
+        breakpoint: 480,
+        options: {
+          chart: {
+            width: 200
+          },
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }],
+      title: {
+        text: "End Products by Category",
+        align: 'center'
+      }
     },
-    series: [
-      {
-        name: "series",
-        data: [10, 20, 40, 50, 60, 20, 10, 35, 45, 70, 25, 70],
-      },
-    ],
+    series: []
   });
 
-  // Update Chart Data
-  const updateChartData = (salesData) => {
-    setChart({
-      ...chart,
-      series: [
-        {
-          name: "Monthly Sales Amount",
-          data: [...salesData],
-        },
-      ],
-    });
-  };
+  const [productChartData, setProductChartData] = useState({
+    options: {
+      labels: [],
+      responsive: [{
+        breakpoint: 480,
+        options: {
+          chart: {
+            width: 200
+          },
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }],
+      title: {
+        text: "End Products by Quantity",
+        align: 'center'
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function (val, { seriesIndex, w }) {
+          return w.config.series[seriesIndex];
+        }
+      }
+    },
+    series: []
+  });
+
+  const [tasks, setTasks] = useState([]);
+  const [taskStats, setTaskStats] = useState({
+    incomplete: 0,
+    overdue: 0,
+    urgent: 0,
+    upcoming: 0
+  });
 
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
-    fetchTotalSaleAmount();
-    fetchTotalPurchaseAmount();
-    fetchStoresData();
-    fetchProductsData();
-    fetchMonthlySalesData();
+    fetchEndProductsData();
+    fetchTasksData();
   }, []);
 
-  // Fetching total sales amount
-  const fetchTotalSaleAmount = () => {
-    fetch(
-      `http://localhost:4000/api/sales/get/${authContext.user}/totalsaleamount`
-    )
-      .then((response) => response.json())
-      .then((datas) => setSaleAmount(datas.totalSaleAmount));
+  // Fetch tasks data
+  const fetchTasksData = async () => {
+    try {
+      const response = await axios.get('http://localhost:4000/api/task');
+      const tasksData = response.data?.tasks || response.data?.data || [];
+      setTasks(tasksData);
+      
+      // Calculate task statistics
+      const today = new Date();
+      const nextWeek = new Date();
+      nextWeek.setDate(today.getDate() + 7);
+
+      const stats = {
+        incomplete: tasksData.filter(task => !task.isCompleted).length,
+        overdue: tasksData.filter(task => 
+          task.dueDate && new Date(task.dueDate) < today && !task.isCompleted
+        ).length,
+        urgent: tasksData.filter(task => 
+          task.priority === 'Urgent' && !task.isCompleted
+        ).length,
+        upcoming: tasksData.filter(task => {
+          if (!task.dueDate) return false;
+          const dueDate = new Date(task.dueDate);
+          return dueDate >= today && dueDate <= nextWeek && !task.isCompleted;
+        }).length
+      };
+      
+      setTaskStats(stats);
+    } catch (err) {
+      console.error('Error fetching tasks:', err);
+    }
   };
 
-  // Fetching total purchase amount
-  const fetchTotalPurchaseAmount = () => {
-    fetch(
-      `http://localhost:4000/api/purchase/get/${authContext.user}/totalpurchaseamount`
-    )
+  // Fetch end products data for the pie charts
+  const fetchEndProductsData = () => {
+    fetch(`http://localhost:4000/api/endproducts`)
       .then((response) => response.json())
-      .then((datas) => setPurchaseAmount(datas.totalPurchaseAmount));
+      .then(data => {
+        prepareEndProductChartsData(data);
+      })
+      .catch(err => console.log(err));
   };
 
-  // Fetching all stores data
-  const fetchStoresData = () => {
-    fetch(`http://localhost:4000/api/store/get/${authContext.user}`)
-      .then((response) => response.json())
-      .then((datas) => setStores(datas));
-  };
-
-  // Fetching Data of All Products
-  const fetchProductsData = () => {
-    fetch(`http://localhost:4000/api/product/get/${authContext.user}`)
-      .then((response) => response.json())
-      .then((datas) => setProducts(datas))
-      .catch((err) => console.log(err));
-  };
-
-  // Fetching Monthly Sales
-  const fetchMonthlySalesData = () => {
-    fetch(`http://localhost:4000/api/sales/getmonthly`)
-      .then((response) => response.json())
-      .then((datas) => updateChartData(datas.salesAmount))
-      .catch((err) => console.log(err));
+  // Prepare data for both pie charts
+  const prepareEndProductChartsData = (endProducts) => {
+    // Prepare data for category pie chart
+    const categoryMap = {};
+    const productMap = {};
+    
+    endProducts.forEach(product => {
+      // For category chart
+      if (categoryMap[product.category]) {
+        categoryMap[product.category] += product.quantity;
+      } else {
+        categoryMap[product.category] = product.quantity;
+      }
+      
+      // For product chart (top 10 products by quantity)
+      productMap[product.name] = product.quantity;
+    });
+    
+    // Sort products by quantity (descending) and take top 10
+    const sortedProducts = Object.entries(productMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+    
+    const productNames = sortedProducts.map(item => item[0]);
+    const productQuantities = sortedProducts.map(item => item[1]);
+    
+    const categories = Object.keys(categoryMap);
+    const categoryQuantities = Object.values(categoryMap);
+    
+    setCategoryChartData({
+      options: {
+        ...categoryChartData.options,
+        labels: categories,
+        colors: [
+          '#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0',
+          '#546E7A', '#26a69a', '#D10CE8', '#FF9F43', '#00D9E9'
+        ].slice(0, categories.length)
+      },
+      series: categoryQuantities
+    });
+    
+    setProductChartData({
+      options: {
+        ...productChartData.options,
+        labels: productNames,
+        colors: [
+          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+          '#FF9F40', '#8AC24A', '#FF5722', '#607D8B', '#9C27B0'
+        ].slice(0, productNames.length)
+      },
+      series: productQuantities
+    });
   };
 
   return (
     <>
-      <div className="grid grid-cols-1 col-span-12 lg:col-span-10 gap-6 md:grid-cols-3 lg:grid-cols-4  p-4 ">
-        <article className="flex flex-col gap-4 rounded-lg border  border-gray-100 bg-white p-6  ">
-          <div className="inline-flex gap-2 self-end rounded bg-green-100 p-1 text-green-600">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-              />
-            </svg>
-
-            <span className="text-xs font-medium"> 67.81% </span>
+      <div className="grid grid-cols-1 col-span-12 lg:col-span-10 gap-6 md:grid-cols-4 lg:grid-cols-4 p-4">
+        {/* Task Statistics Cards */}
+        <article className="flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="inline-flex gap-2 self-end rounded bg-purple-100 p-1 text-purple-600">
+            <span className="text-xs font-medium">This Week</span>
           </div>
-
           <div>
             <strong className="block text-sm font-medium text-gray-500">
-              Sales
+              Incomplete Tasks
             </strong>
-
             <p>
               <span className="text-2xl font-medium text-gray-900">
-                ${saleAmount}
+                {taskStats.incomplete}
               </span>
-
-              <span className="text-xs text-gray-500"> from $240.94 </span>
             </p>
           </div>
         </article>
-
-        <article className="flex flex-col  gap-4 rounded-lg border border-gray-100 bg-white p-6 ">
+        
+        <article className="flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="inline-flex gap-2 self-end rounded bg-red-100 p-1 text-red-600">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"
-              />
-            </svg>
-
-            <span className="text-xs font-medium"> 67.81% </span>
+            <span className="text-xs font-medium">This Week</span>
           </div>
-
           <div>
             <strong className="block text-sm font-medium text-gray-500">
-              Purchase
+              Overdue Tasks
             </strong>
-
             <p>
               <span className="text-2xl font-medium text-gray-900">
-                {" "}
-                ${purchaseAmount}{" "}
+                {taskStats.overdue}
               </span>
-
-              <span className="text-xs text-gray-500"> from $404.32 </span>
             </p>
           </div>
         </article>
-        <article className="flex flex-col   gap-4 rounded-lg border border-gray-100 bg-white p-6 ">
-          <div className="inline-flex gap-2 self-end rounded bg-red-100 p-1 text-red-600">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"
-              />
-            </svg>
-
-            <span className="text-xs font-medium"> 67.81% </span>
+        
+        <article className="flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="inline-flex gap-2 self-end rounded bg-yellow-100 p-1 text-yellow-600">
+            <span className="text-xs font-medium">This Week</span>
           </div>
-
           <div>
             <strong className="block text-sm font-medium text-gray-500">
-              Total Products
+              Urgent Tasks
             </strong>
-
             <p>
               <span className="text-2xl font-medium text-gray-900">
-                {" "}
-                {products.length}{" "}
+                {taskStats.urgent}
               </span>
-
-              {/* <span className="text-xs text-gray-500"> from $404.32 </span> */}
             </p>
           </div>
         </article>
-        <article className="flex flex-col   gap-4 rounded-lg border border-gray-100 bg-white p-6 ">
-          <div className="inline-flex gap-2 self-end rounded bg-red-100 p-1 text-red-600">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"
-              />
-            </svg>
-
-            <span className="text-xs font-medium"> 67.81% </span>
+        
+        <article className="flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="inline-flex gap-2 self-end rounded bg-blue-100 p-1 text-blue-600">
+            <span className="text-xs font-medium">This Week</span>
           </div>
-
           <div>
             <strong className="block text-sm font-medium text-gray-500">
-              Total Stores
+              Upcoming Tasks
             </strong>
-
             <p>
               <span className="text-2xl font-medium text-gray-900">
-                {" "}
-                {stores.length}{" "}
+                {taskStats.upcoming}
               </span>
-
-              {/* <span className="text-xs text-gray-500"> from 0 </span> */}
             </p>
           </div>
         </article>
-        <div className="flex justify-around bg-white rounded-lg py-8 col-span-full justify-center">
-          <div>
+        
+        {/* Chart Section */}
+        <div className="flex flex-col md:flex-row justify-around bg-white rounded-lg py-8 col-span-full gap-8">
+          <div className="flex-1">
             <Chart
-              options={chart.options}
-              series={chart.series}
-              type="bar"
-              width="500"
+              options={categoryChartData.options}
+              series={categoryChartData.series}
+              type="pie"
+              width="100%"
+              height="400"
             />
           </div>
-          <div>
-            <Doughnut data={data} />
+          
+          <div className="flex-1">
+            <Chart
+              options={productChartData.options}
+              series={productChartData.series}
+              type="pie"
+              width="100%"
+              height="400"
+            />
           </div>
         </div>
       </div>
