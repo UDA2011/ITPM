@@ -47,8 +47,8 @@ const taskSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['Orders', 'Stocks', 'Livestock Health', 'Products', 'Employees', 'Maintenance', 'Plantation'],
-        default: 'Orders'
+        enum: ['Stock counting', 'Packaging and labeling', 'Sample collection for testing', 'Facility checks', 'Data entry', 'Training attendance','Orders'],
+        default: 'Stock counting'
     },
     tags: {
         type: [String],

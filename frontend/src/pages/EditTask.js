@@ -8,45 +8,82 @@ const EditTask = () => {
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('Low');
-  const [category, setCategory] = useState('Orders');
-  const [tags, setTags] = useState('');
+  const [category, setCategory] = useState('Stock counting'); // fixed default here
+  const [tags, setTags] = useState([]);
   const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const { id } = useParams();
 
+  // Load existing task data
   useEffect(() => {
     setLoading(true);
     axios.get(`http://localhost:4000/api/task/${id}`)
       .then((response) => {
-        setTitle(response.data.title);
-        setDescription(response.data.description);
-        const formattedDate = new Date(response.data.dueDate).toISOString().split('T')[0];
+        const task = response.data;
+        setTitle(task.title);
+        setDescription(task.description);
+        const formattedDate = new Date(task.dueDate).toISOString().split('T')[0];
         setDueDate(formattedDate);
-        setPriority(response.data.priority);
-        setCategory(response.data.category);
-        setTags(response.data.tags);
-        setIsCompleted(response.data.isCompleted);
+        setPriority(task.priority);
+        setCategory(task.category || 'Stock counting'); // fallback to valid default
+        setTags(task.tags || []);
+        setIsCompleted(task.isCompleted);
         setLoading(false);
       })
       .catch(error => {
-        console.log(error.message);
+        console.error("Fetch task error:", error.message);
+        enqueueSnackbar('Failed to load task', { variant: 'error' });
         setLoading(false);
       });
-  }, [id]);
+  }, [id, enqueueSnackbar]);
 
+  // Form validation
+  const validateForm = () => {
+    const errors = {};
+    if (!title.trim()) errors.title = 'Title is required';
+    else if (title.trim().length < 3) errors.title = 'Title must be at least 3 characters';
+
+    if (!description.trim()) errors.description = 'Description is required';
+    else if (description.trim().length < 10) errors.description = 'Description must be at least 10 characters';
+
+    if (!dueDate) errors.dueDate = 'Due date is required';
+    else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (new Date(dueDate) < today) errors.dueDate = 'Due date cannot be in the past';
+    }
+
+    if (!priority) errors.priority = 'Priority is required';
+
+    // Optional: limit tags count here if needed
+    if (tags.length > 5) errors.tags = 'Cannot have more than 5 tags';
+
+    return errors;
+  };
+
+  // Handle Save
   const handleEditTask = () => {
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
+
     const data = {
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       dueDate,
       priority,
       category,
       tags,
       isCompleted
     };
+
     setLoading(true);
 
     axios
@@ -57,111 +94,128 @@ const EditTask = () => {
         navigate('/taskhome');
       })
       .catch(error => {
-        console.log(error.message);
+        console.error("Update task error:", error.message);
         setLoading(false);
         enqueueSnackbar('Failed to update task', { variant: 'error' });
       });
   };
 
   return (
-    <div className="p-4 bg-green-200">
+    <div className="p-4 bg-green-200 min-h-screen w-[800px]">
       <h1 className="text-3xl my-4 text-center font-serif">Edit Task</h1>
-      <div className="bg-white flex flex-col border-2 border-dark-green rounded-xl w-[600px] p-4 mx-auto bg-light-green">
-        <div className="my-4">
-          <label className="text-xl mr-4 text-gray-700 font-semibold">Title</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="border-2 border-green-700 px-4 py-2 w-full"
-          />
-        </div>
 
-        <div className="my-4">
-          <label className="text-xl mr-4 text-gray-700 font-semibold">Description</label>
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="border-2 border-green-700 px-4 py-2 w-full h-24"
-          />
-        </div>
-
-        <div className="my-4">
-          <label className="text-xl mr-4 text-gray-700 font-semibold">Due Date</label>
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="border-2 border-green-700 px-4 py-2 w-full"
-          />
-        </div>
-
-        <div className="my-4">
-          <label className="text-xl mr-4 text-gray-700 font-semibold">Priority</label>
-          <div className="flex gap-4">
-            {['Low', 'Medium', 'High', 'Urgent'].map((level) => (
-              <label key={level} className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  value={level}
-                  checked={priority === level}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-6 h-6 accent-green-500"
-                />
-                {level}
-              </label>
-            ))}
+      {loading ? (
+        <p className="text-center text-lg font-semibold">Loading...</p>
+      ) : (
+        <div className="bg-white flex flex-col border-2 border-green-700 rounded-xl w-full max-w-2xl p-6 mx-auto">
+          {/* Title */}
+          <div className="my-4">
+            <label className="text-xl font-semibold text-gray-700">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
+            />
+            {formErrors.title && <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>}
           </div>
-        </div>
 
-        <div className="my-4">
-          <label className="text-xl mr-4 text-gray-700 font-semibold">Category</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="border-2 border-green-700 px-4 py-2 w-full"
-          >
-            {['Orders', 'Stocks', 'Livestock Health', 'Products', 'Employees', 'Maintenance', 'Plantation'].map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
+          {/* Description */}
+          <div className="my-4">
+            <label className="text-xl font-semibold text-gray-700">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="border-2 border-green-700 px-4 py-2 w-full rounded-md h-28 resize-none"
+            />
+            {formErrors.description && <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>}
+          </div>
 
-        <div className="my-4">
-          <label className="text-xl mr-4 text-gray-700 font-semibold">Tags</label>
-          <input
-            type="text"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            className="border-2 border-green-700 px-4 py-2 w-full"
-          />
-        </div>
+          {/* Due Date */}
+          <div className="my-4">
+            <label className="text-xl font-semibold text-gray-700">Due Date</label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
+            />
+            {formErrors.dueDate && <p className="text-red-500 text-sm mt-1">{formErrors.dueDate}</p>}
+          </div>
 
-        <div className="my-4 flex justify-end items-center gap-4">
-          <label className="text-xl text-gray-700 font-semibold flex items-center gap-4">
+          {/* Priority */}
+          <div className="my-4">
+            <label className="text-xl font-semibold text-gray-700">Priority</label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+            {formErrors.priority && <p className="text-red-500 text-sm mt-1">{formErrors.priority}</p>}
+          </div>
+
+          {/* Category */}
+          <div className="my-4">
+            <label className="text-xl font-semibold text-gray-700">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
+            >
+              <option value="Stock counting">Stock counting</option>
+              <option value="Packaging and labeling">Packaging and labeling</option>
+              <option value="Sample collection for testing">Sample collection for testing</option>
+              <option value="Facility checks">Facility checks</option>
+              <option value="Data entry">Data entry</option>
+              <option value="Training attendance">Training attendance</option>
+            </select>
+          </div>
+
+          {/* Tags */}
+          <div className="my-4">
+            <label className="text-xl font-semibold text-gray-700">Tags (comma separated)</label>
+            <input
+              type="text"
+              value={tags.join(', ')}
+              onChange={(e) => setTags(e.target.value.split(',').map(t => t.trim()).filter(t => t))}
+              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
+              placeholder="tag1, tag2, tag3"
+            />
+            {formErrors.tags && <p className="text-red-500 text-sm mt-1">{formErrors.tags}</p>}
+          </div>
+
+          {/* Completed checkbox */}
+          <div className="my-4 flex items-center space-x-3">
             <input
               type="checkbox"
               checked={isCompleted}
               onChange={(e) => setIsCompleted(e.target.checked)}
-              className="w-6 h-6 accent-green-500"
+              id="completed-checkbox"
+              className="w-5 h-5"
             />
-            Completed
-          </label>
-        </div>
+            <label htmlFor="completed-checkbox" className="text-lg font-medium text-gray-700 select-none">
+              Mark as Completed
+            </label>
+          </div>
 
-        <div className="my-4 flex justify-center">
-          <button
-            className="p-3 bg-green-700 text-white font-bold rounded-lg w-full max-w-xs hover:bg-sky-400 transition-all"
-            onClick={handleEditTask}
-            disabled={loading}
-          >
-            Save
-          </button>
+          {/* Save button */}
+          <div className="my-6 flex justify-center">
+            <button
+              type="button"
+              className="p-3 bg-green-700 text-white font-bold rounded-lg w-full max-w-xs hover:bg-sky-400 transition-all"
+              onClick={handleEditTask}
+              disabled={loading}
+            >
+              {loading ? 'Saving...' : 'Save'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
