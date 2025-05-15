@@ -47,12 +47,12 @@ function Login() {
           alert("Successfully logged in!");
           localStorage.setItem("user", JSON.stringify(data));
           const jobPosition = data.jobPosition ? data.jobPosition.toLowerCase() : "";
-          if (jobPosition === "factoryworkers") {
-            navigate("/Factoryworkers");
-          } else if (jobPosition === "manager") {
-            navigate("/manager");
+          if (jobPosition === "manager") {
+            navigate("/Employee/Managers"); // Match the route in App.js
+          } else if (jobPosition === "factory worker") {
+            navigate("/Employee/Factoryworkers"); // Match the route in App.js
           } else {
-            navigate("/");
+            navigate("/dashboard"); // Default route for other roles
           }
           authContext.signin(data._id, () => {});
         }
