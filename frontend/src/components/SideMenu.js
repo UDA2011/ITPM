@@ -21,9 +21,9 @@ function SideMenu() {
             <img
               alt="dashboard-icon"
               src={require("../assets/dashboard-icon.png")}
-              className="h-10 w-10 transform group-hover:scale-110 transition-transform"
+              className="h-12 w-12 transform group-hover:scale-110 transition-transform"
             />
-            <span className="text-sm font-medium">Dashboard</span>
+            <span className="text-base font-medium">Dashboard</span>
           </Link>
 
           {/* Inventory Dropdown */}
@@ -39,12 +39,12 @@ function SideMenu() {
                 <img
                   alt="inventory-icon"
                   src={require("../assets/inventory-icon.png")}
-                  className="h-10 w-10 transform group-hover:scale-110 transition-transform"
+                  className="h-12 w-12 transform group-hover:scale-110 transition-transform"
                 />
-                <span className="text-sm font-medium">Inventory</span>
+                <span className="text-base font-medium">Inventory</span>
               </div>
               <svg
-                className="h-5 w-5 text-gray-500 group-open:rotate-90 transition-transform"
+                className="h-6 w-6 text-gray-500 group-open:rotate-90 transition-transform"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -94,9 +94,9 @@ function SideMenu() {
             <img
               alt="supplier-icon"
               src={require("../assets/icons8-supplies-48.png")}
-              className="h-10 w-10 transform group-hover:scale-110 transition-transform"
+              className="h-12 w-12 transform group-hover:scale-110 transition-transform"
             />
-            <span className="text-sm font-medium">Supplier</span>
+            <span className="text-base font-medium">Supplier</span>
           </Link>
 
           {/* Employee Dropdown */}
@@ -112,12 +112,12 @@ function SideMenu() {
                 <img
                   alt="employee-icon"
                   src={require("../assets/icons8-employee-48.png")}
-                  className="h-10 w-10 transform group-hover:scale-110 transition-transform"
+                  className="h-12 w-12 transform group-hover:scale-110 transition-transform"
                 />
-                <span className="text-sm font-medium">Employee</span>
+                <span className="text-base font-medium">Employee</span>
               </div>
               <svg
-                className="h-5 w-5 text-gray-500 group-open:rotate-90 transition-transform"
+                className="h-6 w-6 text-gray-500 group-open:rotate-90 transition-transform"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -155,7 +155,7 @@ function SideMenu() {
             </div>
           </details>
 
-          {/* Task Link - Fixed merge conflict */}
+          {/* Task Link */}
           <Link
             to="/taskhome"
             className={`flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 transition-all duration-300 ${
@@ -167,9 +167,9 @@ function SideMenu() {
             <img
               alt="task-icon"
               src={require("../assets/task-icon.png")}
-              className="h-10 w-10 transform group-hover:scale-110 transition-transform"
+              className="h-12 w-12 transform group-hover:scale-110 transition-transform"
             />
-            <span className="text-sm font-medium">Task</span>
+            <span className="text-base font-medium">Task</span>
           </Link>
         </nav>
       </div>
@@ -181,13 +181,13 @@ function SideMenu() {
             <img
               alt="Profile"
               src={localStorageData.imageUrl}
-              className="h-12 w-12 rounded-full object-cover border-2 border-blue-200"
+              className="h-14 w-14 rounded-full object-cover border-2 border-blue-200"
             />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-base font-semibold text-gray-800">
                 {localStorageData.firstName} {localStorageData.lastName}
               </p>
-              <p className="text-xs text-gray-500 truncate">{localStorageData.email}</p>
+              <p className="text-sm text-gray-500 truncate">{localStorageData.email}</p>
             </div>
           </div>
         </div>
