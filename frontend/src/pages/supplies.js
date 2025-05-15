@@ -12,13 +12,17 @@ function Suppliers() {
   const [showViewRequestModal, setShowViewRequestModal] = useState(false);
   const [showSelectedSupplierModal, setShowSelectedSupplierModal] = useState(false);
   const [suppliers, setAllSuppliers] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const [updatePage, setUpdatePage] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
     fetchSuppliersData();
+    fetchRequestsData();
   }, [updatePage]);
 
   const fetchSuppliersData = () => {
@@ -28,6 +32,19 @@ function Suppliers() {
         setAllSuppliers(data);
       })
       .catch((err) => console.log(err));
+  };
+
+  const fetchRequestsData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:4000/api/requests");
+      const data = await response.json();
+      setRequests(data);
+    } catch (err) {
+      console.error('Error fetching requests:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const deleteSupplier = (id) => {
@@ -50,9 +67,29 @@ function Suppliers() {
     }
   };
 
+  const deleteRequest = async (id) => {
+    if (window.confirm("Are you sure you want to delete this request?")) {
+      try {
+        await fetch(`http://localhost:4000/api/requests/${id}`, {
+          method: "DELETE",
+        });
+        fetchRequestsData(); // Refresh the requests list
+        alert("Request deleted successfully!");
+      } catch (error) {
+        console.error('Error deleting request:', error);
+        alert("Failed to delete request. Please try again.");
+      }
+    }
+  };
+
   const openEditModal = (supplier) => {
     setSelectedSupplier(supplier);
     setShowEditSupplierModal(true);
+  };
+
+  const viewRequest = (request) => {
+    setSelectedRequest(request);
+    setShowViewRequestModal(true);
   };
 
   const addSupplierModalSetting = () => {
@@ -118,9 +155,14 @@ function Suppliers() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">View Requests</h2>
+                <h2 className="text-xl font-bold">
+                  {selectedRequest ? "Request Details" : "All Requests"}
+                </h2>
                 <button
-                  onClick={viewRequestModalSetting}
+                  onClick={() => {
+                    setShowViewRequestModal(false);
+                    setSelectedRequest(null);
+                  }}
                   className="text-gray-500 hover:text-gray-700"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -129,8 +171,98 @@ function Suppliers() {
                 </button>
               </div>
               <div className="space-y-4">
-                {/* Placeholder for request data */}
-                <p className="text-gray-600">Request data will be displayed here.</p>
+                {selectedRequest ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="font-semibold">Product Name</h3>
+                        <p>{selectedRequest.name}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Current Quantity</h3>
+                        <p>{selectedRequest.currentQty}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Requested Quantity</h3>
+                        <p>{selectedRequest.requestQty}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Status</h3>
+                        <p className={`capitalize ${selectedRequest.status === 'approved' ? 'text-green-600' : 
+                                      selectedRequest.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'}`}>
+                          {selectedRequest.status}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-4 pt-4">
+                      <button
+                        onClick={() => {
+                          deleteRequest(selectedRequest._id);
+                          setShowViewRequestModal(false);
+                        }}
+                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                      >
+                        Delete Request
+                      </button>
+                      <button
+                        onClick={() => setShowViewRequestModal(false)}
+                        className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    {isLoading ? (
+                      <div className="flex justify-center items-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                      </div>
+                    ) : (
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Qty</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested Qty</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {requests.map((request) => (
+                            <tr key={request._id}>
+                              <td className="px-6 py-4 whitespace-nowrap">{request.name}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">{request.currentQty}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">{request.requestQty}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                  ${request.status === 'approved' ? 'bg-green-100 text-green-800' : 
+                                    request.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                  {request.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button
+                                  onClick={() => viewRequest(request)}
+                                  className="text-blue-600 hover:text-blue-900 mr-4"
+                                >
+                                  View
+                                </button>
+                                <button
+                                  onClick={() => deleteRequest(request._id)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -166,7 +298,7 @@ function Suppliers() {
                 className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-md"
                 onClick={viewRequestModalSetting}
               >
-                View Request
+                View Requests
               </button>
               <button
                 className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-md"

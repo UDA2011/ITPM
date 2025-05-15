@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 
 function SideMenu() {
   const localStorageData = JSON.parse(localStorage.getItem("user")) || {};
+
+
   const location = useLocation(); // To track the active route
   const jobPosition = localStorageData.jobPosition; // Get user's job position
 
@@ -14,7 +16,9 @@ function SideMenu() {
     <div className="h-full flex-col justify-between bg-gradient-to-b from-blue-50 to-white shadow-lg hidden lg:flex w-64">
       <div className="px-4 py-6">
         <nav aria-label="Main Nav" className="mt-6 flex flex-col space-y-2">
+
           {/* Dashboard Link - Accessible to both roles */}
+
           <Link
             to="/"
             className={`flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 transition-all duration-300 ${
@@ -26,9 +30,9 @@ function SideMenu() {
             <img
               alt="dashboard-icon"
               src={require("../assets/dashboard-icon.png")}
-              className="h-10 w-10 transform group-hover:scale-110 transition-transform"
+              className="h-12 w-12 transform group-hover:scale-110 transition-transform"
             />
-            <span className="text-sm font-medium">Dashboard</span>
+            <span className="text-base font-medium">Dashboard</span>
           </Link>
 
           {/* Inventory Dropdown - Only for Managers */}
@@ -56,12 +60,14 @@ function SideMenu() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
+
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
                     d="M9 5l7 7-7 7"
                   />
+
                 </svg>
               </summary>
               <div className="ml-8 mt-2 space-y-1 animate-slide-down">
@@ -89,7 +95,9 @@ function SideMenu() {
             </details>
           )}
 
+
           {/* Supplier Link - Only for Managers */}
+
           {isManager && (
             <Link
               to="/supplies"
@@ -133,12 +141,15 @@ function SideMenu() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
+
+
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
                     d="M9 5l7 7-7 7"
                   />
+
                 </svg>
               </summary>
               <div className="ml-8 mt-2 space-y-1 animate-slide-down">
@@ -166,7 +177,10 @@ function SideMenu() {
             </details>
           )}
 
+
+
           {/* Task Link - Accessible to both Factory Workers and Managers */}
+
           {(isFactoryWorker || isManager) && (
             <Link
               to="/taskhome"
@@ -187,20 +201,20 @@ function SideMenu() {
         </nav>
       </div>
 
-      {/* User Profile Section */}
+      {/* Profile Section */}
       {localStorageData && localStorageData.imageUrl && (
         <div className="sticky inset-x-0 bottom-0 border-t border-gray-200 bg-white">
           <div className="flex items-center gap-3 p-4 hover:bg-blue-50 transition-all duration-300 rounded-lg mx-4 mb-4 shadow-sm">
             <img
               alt="Profile"
               src={localStorageData.imageUrl}
-              className="h-12 w-12 rounded-full object-cover border-2 border-blue-200"
+              className="h-14 w-14 rounded-full object-cover border-2 border-blue-200"
             />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-base font-semibold text-gray-800">
                 {localStorageData.firstName} {localStorageData.lastName}
               </p>
-              <p className="text-xs text-gray-500 truncate">{localStorageData.email}</p>
+              <p className="text-sm text-gray-500 truncate">{localStorageData.email}</p>
             </div>
           </div>
         </div>
