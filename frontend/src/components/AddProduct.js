@@ -1,6 +1,6 @@
 import { Fragment, useRef, useState, useContext, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../AuthContext";
 
 export default function AddProduct({ setUpdatePage, addProductModalSetting, productType }) {
@@ -8,10 +8,10 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
 
   const [form, setForm] = useState({
     name: "",
-    category: "",
+    category: "Excipients",
     price: "",
     quantity: "",
-    value: "",
+    value: ""
   });
 
   const [open, setOpen] = useState(true);
@@ -21,27 +21,28 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Validation for raw material name (only letters allowed and max length 20)
     if (name === "name") {
-      const letterPattern = /^[A-Za-z\s]+$/;
-      
+      const letterPattern = /^[A-Za-z\s]*$/;
       if (value.length > 20) {
         setError("Raw Material Name cannot exceed 20 characters.");
         return;
       }
-      
-      if (!letterPattern.test(value) && value !== "") {
+      if (!letterPattern.test(value)) {
         setError("Raw Material Name can only contain letters and spaces.");
         return;
       }
-      
       setError("");
     }
 
-    // Validation for price, quantity
     if (name === "price" || name === "quantity") {
-      if (value < 0) {
-        setError(`${name} cannot be negative`);
+      if (value === "") {
+        setForm({ ...form, [name]: value });
+        setError("");
+        return;
+      }
+      const numValue = parseFloat(value);
+      if (isNaN(numValue) || numValue < 0) {
+        setError(`${name} must be a valid non-negative number`);
         return;
       }
       if (value.length > 6) {
@@ -53,13 +54,17 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
     setForm({ ...form, [name]: value });
   };
 
-  // Auto-calculate value whenever price or quantity changes
   useEffect(() => {
-    if (form.price && form.quantity) {
-      const calculatedValue = (parseFloat(form.price) * parseFloat(form.quantity)).toFixed(2);
-      setForm(prevForm => ({
+    if (form.price && form.quantity && !isNaN(parseFloat(form.price)) && !isNaN(parseInt(form.quantity))) {
+      const calculatedValue = (parseFloat(form.price) * parseInt(form.quantity)).toFixed(2);
+      setForm((prevForm) => ({
         ...prevForm,
         value: calculatedValue
+      }));
+    } else {
+      setForm((prevForm) => ({
+        ...prevForm,
+        value: ""
       }));
     }
   }, [form.price, form.quantity]);
@@ -71,72 +76,61 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
 
   const addProduct = async () => {
     try {
-      // Reset error
       setError("");
-
-      // Check if all fields are filled
-      const requiredFields = ['name', 'category', 'price', 'quantity'];
-      const emptyFields = requiredFields.filter(field => !form[field]);
-      
+      const requiredFields = ["name", "category", "price", "quantity"];
+      const emptyFields = requiredFields.filter((field) => !form[field] || form[field] === "");
       if (emptyFields.length > 0) {
-        setError(`Please fill out: ${emptyFields.join(', ')}`);
+        setError(`Please fill out: ${emptyFields.join(", ")}`);
         return;
       }
-
-      // Check if name exceeds maximum length
       if (form.name.length > 20) {
         setError("Raw Material Name cannot exceed 20 characters");
         return;
       }
-
-      // Check if price and quantity are positive numbers
-      if (parseFloat(form.price) <= 0 || parseFloat(form.quantity) <= 0) {
-        setError("Price and Quantity must be positive numbers");
+      const price = parseFloat(form.price);
+      const quantity = parseInt(form.quantity);
+      if (isNaN(price) || price <= 0 || isNaN(quantity) || quantity <= 0) {
+        setError("Price and Quantity must be valid positive numbers");
         return;
       }
-
+      if (!["Excipients", "Active Pharmaceutical Ingredients", "Solvents & Diluents", "Additives & Enhancers"].includes(form.category)) {
+        setError("Invalid category selected");
+        return;
+      }
       const productData = {
         name: form.name,
         category: form.category,
-        price: parseFloat(form.price),
-        quantity: parseInt(form.quantity),
-        value: parseFloat(form.value) || 0,
-        requestQty: 0, // Default value for request quantity
-        currentQty: parseInt(form.quantity), // Current quantity equals initial quantity
-        type: productType // Include the product type from props
+        price: price,
+        quantity: quantity,
+        currentQty: quantity,
+        requestQty: 0
       };
-
+      console.log("Sending productData:", JSON.stringify(productData, null, 2));
       const response = await fetch("http://localhost:4000/api/inventory", {
         method: "POST",
         headers: {
-          "Content-type": "application/json",
-          "Authorization": `Bearer ${authContext.user.token}`
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(productData),
+        body: JSON.stringify(productData)
       });
-
       const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.message || "Failed to add product");
+        console.error("Backend error:", result);
+        throw new Error(result.message || `HTTP ${response.status}: Failed to add product`);
       }
-
       alert("Product Added Successfully");
       handleClose();
-      // Reset form after successful submission
       setForm({
         name: "",
-        category: "",
+        category: "Excipients",
         price: "",
         quantity: "",
-        value: "",
+        value: ""
       });
-      
-      // Trigger parent component to refresh data
-      setUpdatePage(prev => !prev);
+      setUpdatePage((prev) => !prev);
     } catch (error) {
       console.error("Error adding product:", error);
-      setError(error.message || "Error adding product. Please try again.");
+      setError(error.message || "Failed to add product. Please try again.");
     }
   };
 
@@ -152,11 +146,11 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-80 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -166,25 +160,36 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:h-auto">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-xl bg-white text-left shadow-lg ring-1 ring-gray-200 transition-all sm:my-8 sm:w-full sm:max-w-5xl sm:h-auto">
                 <div className="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
                   <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                      <PlusIcon className="h-6 w-6 text-blue-400" aria-hidden="true" />
+                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10 transition-transform duration-300 group-hover:scale-110">
+                      <PlusIcon className="h-6 w-6 text-blue-500" aria-hidden="true" />
                     </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                      <Dialog.Title as="h3" className="text-2xl font-semibold leading-6 text-gray-900">
+                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                      <Dialog.Title as="h3" className="text-2xl font-bold leading-6 text-gray-900">
                         Add {productType === "raw" ? "Raw Material" : "End Product"}
                       </Dialog.Title>
                       {error && (
-                        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded">
-                          {error}
-                        </div>
+                        <Transition
+                          show={!!error}
+                          enter="transition-opacity duration-200"
+                          enterFrom="opacity-0"
+                          enterTo="opacity-100"
+                          leave="transition-opacity duration-150"
+                          leaveFrom="opacity-100"
+                          leaveTo="opacity-0"
+                        >
+                          <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
+                            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                            <span>{error}</span>
+                          </div>
+                        </Transition>
                       )}
                       <form>
                         <div className="grid gap-6 mb-6 sm:grid-cols-2 mt-6">
                           <div>
-                            <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900">
+                            <label htmlFor="name" className="block mb-2 text-sm font-semibold text-gray-700">
                               {productType === "raw" ? "Raw Material Name" : "Product Name"}
                             </label>
                             <input
@@ -193,35 +198,35 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
                               id="name"
                               value={form.name}
                               onChange={handleInputChange}
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                              className="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full min-w-[16rem] p-3 transition-all duration-200 hover:border-gray-300 placeholder-gray-400"
                               placeholder={`Enter ${productType === "raw" ? "Raw Material" : "Product"} Name`}
                               required
                               maxLength={20}
                             />
                           </div>
                           <div>
-                            <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900">
+                            <label htmlFor="category" className="block mb-2 text-sm font-semibold text-gray-700">
                               Category
                             </label>
                             <select
                               id="category"
                               name="category"
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
+                              className="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full min-w-[16rem] p-3 transition-all duration-200 hover:border-gray-300"
                               value={form.category}
                               onChange={handleInputChange}
                               required
                             >
-                              <option value="">Select a category</option>
+                              <option value="Excipients">Select a category</option>
                               <option value="Excipients">Excipients</option>
                               <option value="Active Pharmaceutical Ingredients">
                                 Active Pharmaceutical Ingredients
                               </option>
                               <option value="Solvents & Diluents">Solvents & Diluents</option>
-                              <option value="Additives & Enhancers">Additives & Enhancers</option>                            
+                              <option value="Additives & Enhancers">Additives & Enhancers</option>
                             </select>
                           </div>
                           <div>
-                            <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900">
+                            <label htmlFor="price" className="block mb-2 text-sm font-semibold text-gray-700">
                               Price
                             </label>
                             <input
@@ -230,15 +235,15 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
                               id="price"
                               value={form.price}
                               onChange={handleInputChange}
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              placeholder="Enter Price"
+                              className="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full min-w-[16rem] p-3 transition-all duration-200 hover:border-gray-300 placeholder-gray-400"
+                              placeholder="Enter Price (e.g., 10.50)"
                               required
                               step="0.01"
                               min="0"
                             />
                           </div>
                           <div>
-                            <label htmlFor="quantity" className="block mb-2 text-sm font-medium text-gray-900">
+                            <label htmlFor="quantity" className="block mb-2 text-sm font-semibold text-gray-700">
                               Quantity
                             </label>
                             <input
@@ -247,14 +252,14 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
                               id="quantity"
                               value={form.quantity}
                               onChange={handleInputChange}
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              placeholder="Enter Quantity"
+                              className="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full min-w-[16rem] p-3 transition-all duration-200 hover:border-gray-300 placeholder-gray-400"
+                              placeholder="Enter Quantity (e.g., 100)"
                               required
                               min="1"
                             />
                           </div>
                           <div>
-                            <label htmlFor="value" className="block mb-2 text-sm font-medium text-gray-900">
+                            <label htmlFor="value" className="block mb-2 text-sm font-semibold text-gray-700">
                               Value (Auto-calculated)
                             </label>
                             <input
@@ -262,7 +267,8 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
                               name="value"
                               id="value"
                               value={form.value}
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                              className="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg block w-full min-w-[16rem] p-3 transition-all duration-200 placeholder-gray-400"
+                              placeholder="Calculated Value"
                               readOnly
                             />
                           </div>
@@ -274,14 +280,14 @@ export default function AddProduct({ setUpdatePage, addProductModalSetting, prod
                 <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse sm:px-8">
                   <button
                     type="button"
-                    className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                    className="inline-flex justify-center rounded-md bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-blue-600 sm:ml-3 sm:w-auto transition-all duration-200"
                     onClick={addProduct}
                   >
                     Add {productType === "raw" ? "Material" : "Product"}
                   </button>
                   <button
                     type="button"
-                    className="mt-3 inline-flex justify-center rounded-md bg-white px-6 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    className="mt-3 inline-flex justify-center rounded-md bg-white px-6 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-gray-200 hover:bg-gray-100 hover:text-gray-900 sm:mt-0 sm:w-auto transition-all duration-200"
                     onClick={handleClose}
                     ref={cancelButtonRef}
                   >
