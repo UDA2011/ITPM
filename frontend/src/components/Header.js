@@ -31,22 +31,16 @@ export default function Header() {
   };
 
   return (
-
-    <div className="min-h-full w-screen"> {/* Already full viewport width */}
-      <Disclosure as="nav" className="bg-gradient-to-r from-teal-700 to-indigo-800 bg-opacity-95 border-b border-teal-600 w-full">
+    <div className="min-h-full">
+      <Disclosure as="nav" className="bg-gradient-to-r from-teal-700 to-indigo-800 bg-opacity-95 backdrop-blur-lg shadow-xl">
         {({ open }) => (
           <>
-            <div className="mx-auto w-full px-4 sm:px-6 lg:px-8"> {/* Increased padding for wider feel */}
-
+            <div className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-4"> {/* Reduced padding from px-4 to px-2 */}
               <div className="flex h-16 items-center justify-between">
                 {/* Logo Section */}
                 <div className="flex items-center">
                   <Link to="/" className="flex-shrink-0 group">
-
-                    
-
-                    <div className="flex items-center gap-3 bg-teal-800 bg-opacity-60 px-4 py-2 rounded-xl transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(45,212,191,0.7)]">
-
+                    <div className="flex items-center gap-3 bg-teal-800 bg-opacity-60 px-3 py-2 rounded-xl transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(45,212,191,0.7)]">
                       <img
                         className="h-12 w-12 rounded-full ring-2 ring-teal-400 transition-transform duration-300 group-hover:scale-110"
                         src={require("../assets/logo.png")}
@@ -60,10 +54,7 @@ export default function Header() {
                 </div>
 
                 {/* Right Section: Icons and Profile */}
-
-          
-                <div className="hidden md:flex items-center space-x-6"> {/* Increased space-x for wider spacing */}
-
+                <div className="hidden md:flex items-center space-x-4">
                   {/* Search Bar */}
                   <div className="relative">
                     <button
@@ -76,9 +67,7 @@ export default function Header() {
                       <MagnifyingGlassIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
                     {isSearchOpen && (
-
-
-                      <div className="absolute right-0 mt-2 w-72"> {/* Increased search bar width */}
+                      <div className="absolute right-0 mt-2 w-64">
                         <input
                           type="text"
                           placeholder="Search..."
@@ -136,8 +125,7 @@ export default function Header() {
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-
-                      <Menu.Items className="absolute right-0 z= z-10 mt-2 w-48 origin-top-right rounded-lg bg-teal-800 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg bg-teal-800 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none">
                         {userNavigation.map((item) => (
                           <Menu.Item key={item.name}>
                             {({ active }) => (
