@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable"; // Explicit import
+import "jspdf-autotable"; // Import autoTable plugin
 
 function Managers() {
   const [managers, setManagers] = useState([]);
@@ -35,7 +35,6 @@ function Managers() {
       }
 
       const managerUsers = data.filter((user) => user.jobPosition === "Manager");
-      console.log("Fetched managers:", managerUsers);
       setManagers(managerUsers);
       setFilteredManagers(managerUsers);
     } catch (err) {
@@ -55,7 +54,9 @@ function Managers() {
     } else {
       const filtered = managers.filter(
         (manager) =>
-          `${manager.firstName || ""} ${manager.lastName || ""}`.toLowerCase().includes(query.toLowerCase()) ||
+          `${manager.firstName || ""} ${manager.lastName || ""}`
+            .toLowerCase()
+            .includes(query.toLowerCase()) ||
           (manager.email || "").toLowerCase().includes(query.toLowerCase()) ||
           (manager.nic || "").toLowerCase().includes(query.toLowerCase())
       );
@@ -129,68 +130,35 @@ function Managers() {
 
   const generateReport = () => {
     try {
-      console.log("Attempting to generate PDF with managers:", filteredManagers);
       if (!filteredManagers || filteredManagers.length === 0) {
-        console.warn("No managers available to generate a report.");
         alert("No managers available to generate a report.");
         return;
       }
 
       const doc = new jsPDF();
-      console.log("jsPDF initialized successfully");
-
-      // Explicitly apply the autoTable plugin
-      console.log("Applying autoTable plugin");
-      autoTable(doc);
-
-      if (!doc.autoTable) {
-        console.warn("autoTable plugin not loaded, falling back to basic PDF");
-        doc.setFontSize(18);
-        doc.text("Managers Report (Fallback)", 14, 20);
-        let yPosition = 30;
-        filteredManagers.forEach((manager, index) => {
-          doc.text(
-            `${index + 1}. ${manager.firstName || "N/A"} ${manager.lastName || "N/A"} - ${
-              manager.email || "N/A"
-            }`,
-            14,
-            yPosition
-          );
-          yPosition += 10;
-        });
-        doc.save("managers_fallback.pdf");
-        alert("Generated fallback PDF due to autoTable issue.");
-        return;
-      }
-
       doc.setFontSize(18);
       doc.text("Managers Report", 14, 20);
 
       const headers = [["First Name", "Last Name", "Email", "Phone", "NIC", "Age", "Start Date"]];
-      const data = filteredManagers.map((manager, index) => {
-        console.log(`Processing manager ${index + 1}:`, manager);
-        // Validate jobStartDate to prevent invalid date errors
-        let formattedDate = "";
+      const data = filteredManagers.map((manager) => {
+        let formattedDate = "N/A";
         try {
           formattedDate = manager.jobStartDate
             ? new Date(manager.jobStartDate).toLocaleDateString()
-            : "";
+            : "N/A";
         } catch (e) {
-          console.warn(`Invalid jobStartDate for manager ${index + 1}:`, manager.jobStartDate);
-          formattedDate = "N/A";
+          console.warn(`Invalid jobStartDate for manager:`, manager.jobStartDate);
         }
         return [
-          manager.firstName || "",
-          manager.lastName || "",
-          manager.email || "",
-          manager.phoneNumber || "",
-          manager.nic || "",
-          manager.age || "",
+          manager.firstName || "N/A",
+          manager.lastName || "N/A",
+          manager.email || "N/A",
+          manager.phoneNumber || "N/A",
+          manager.nic || "N/A",
+          manager.age || "N/A",
           formattedDate,
         ];
       });
-
-      console.log("Table data prepared:", data);
 
       doc.autoTable({
         head: headers,
@@ -209,10 +177,9 @@ function Managers() {
         },
       });
 
-      console.log("Table added to PDF, saving...");
       doc.save("managers_report.pdf");
     } catch (err) {
-      console.error("Error generating PDF:", err.message, err.stack);
+      console.error("Error generating PDF:", err);
       alert("Failed to generate PDF: " + err.message);
     }
   };
@@ -405,7 +372,8 @@ function Managers() {
                           ) : (
                             <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
                               <span className="text-gray-500 text-base font-medium">
-                                {manager.firstName?.charAt(0) || ""}{manager.lastName?.charAt(0) || ""}
+                                {manager.firstName?.charAt(0) || ""}
+                                {manager.lastName?.charAt(0) || ""}
                               </span>
                             </div>
                           )}
