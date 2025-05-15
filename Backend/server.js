@@ -11,6 +11,8 @@ const requestRoutes = require("./router/requestRoutes");
 const tasksRoute = require("./router/tasksRoute");
 
 const User = require("./models/users");
+// Remove or import the Product model if needed
+// const Product = require("./models/product");
 
 // Load environment variables
 dotenv.config();
@@ -26,13 +28,11 @@ main()
 // Middleware
 app.use(express.json());
 
-
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type']
 }));
-
 
 // ---------------------- Routes ----------------------
 app.use("/api/suppliers", supplierRoutes);
@@ -40,7 +40,6 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api/endproducts", endProductRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/task", tasksRoute);
-
 
 // ------------- User Routes --------------
 // CREATE - User Registration
@@ -200,7 +199,8 @@ app.post("/api/users/login", async (req, res) => {
   }
 });
 
-// Test Route (Note: Product model needs to be imported if used)
+// Test Route (Commented out since Product model is not imported)
+/*
 app.get("/testget", async (req, res) => {
   try {
     const result = await Product.findOne({ _id: "6429979b2e5434138eda1564" });
@@ -210,9 +210,11 @@ app.get("/testget", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: err.message });
   }
 });
+*/
 
 
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+

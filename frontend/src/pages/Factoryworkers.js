@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
-import "jspdf-autotable"; // Optional: for better table formatting
+import autoTable from "jspdf-autotable"; // Explicit import
 
 function Factoryworkers() {
   const [workers, setWorkers] = useState([]);
@@ -16,7 +16,7 @@ function Factoryworkers() {
     phoneNumber: "",
     nic: "",
     age: "",
-    jobStartDate: ""
+    jobStartDate: "",
   });
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -29,15 +29,15 @@ function Factoryworkers() {
     try {
       const response = await fetch("http://localhost:4000/api/users");
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || "Failed to fetch workers");
       }
 
-      // Filter users with jobPosition "Factory Worker"
-      const workerUsers = data.filter(user => user.jobPosition === "Factory Worker");
+      const workerUsers = data.filter((user) => user.jobPosition === "Factory Worker");
+      console.log("Fetched workers:", workerUsers);
       setWorkers(workerUsers);
-      setFilteredWorkers(workerUsers); // Initialize filtered list
+      setFilteredWorkers(workerUsers);
     } catch (err) {
       console.error("Error fetching workers:", err);
       setError(err.message);
@@ -46,18 +46,18 @@ function Factoryworkers() {
     }
   };
 
-  // Handle search input change
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
 
     if (query.trim() === "") {
-      setFilteredWorkers(workers); // Show all workers if search is empty
+      setFilteredWorkers(workers);
     } else {
-      const filtered = workers.filter((worker) =>
-        `${worker.firstName} ${worker.lastName}`.toLowerCase().includes(query.toLowerCase()) ||
-        worker.email.toLowerCase().includes(query.toLowerCase()) ||
-        worker.nic.toLowerCase().includes(query.toLowerCase())
+      const filtered = workers.filter(
+        (worker) =>
+          `${worker.firstName || ""} ${worker.lastName || ""}`.toLowerCase().includes(query.toLowerCase()) ||
+          (worker.email || "").toLowerCase().includes(query.toLowerCase()) ||
+          (worker.nic || "").toLowerCase().includes(query.toLowerCase())
       );
       setFilteredWorkers(filtered);
     }
@@ -66,14 +66,13 @@ function Factoryworkers() {
   const handleDelete = async (id) => {
     try {
       const response = await fetch(`http://localhost:4000/api/users/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to delete worker");
       }
-      
-      // Refresh the worker list after deletion
+
       fetchWorkers();
     } catch (err) {
       console.error("Error deleting worker:", err);
@@ -84,13 +83,13 @@ function Factoryworkers() {
   const handleEdit = (worker) => {
     setEditingId(worker._id);
     setEditFormData({
-      firstName: worker.firstName,
-      lastName: worker.lastName,
-      email: worker.email,
-      phoneNumber: worker.phoneNumber,
-      nic: worker.nic,
-      age: worker.age,
-      jobStartDate: worker.jobStartDate.split('T')[0] // Format date for input
+      firstName: worker.firstName || "",
+      lastName: worker.lastName || "",
+      email: worker.email || "",
+      phoneNumber: worker.phoneNumber || "",
+      nic: worker.nic || "",
+      age: worker.age || "",
+      jobStartDate: worker.jobStartDate ? worker.jobStartDate.split("T")[0] : "",
     });
   };
 
@@ -98,7 +97,7 @@ function Factoryworkers() {
     const { name, value } = e.target;
     setEditFormData({
       ...editFormData,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -116,7 +115,6 @@ function Factoryworkers() {
         throw new Error("Failed to update worker");
       }
 
-      // Refresh the worker list after update
       fetchWorkers();
       setEditingId(null);
     } catch (err) {
@@ -129,48 +127,69 @@ function Factoryworkers() {
     setEditingId(null);
   };
 
-  // Generate PDF report
   const generateReport = () => {
-    const doc = new jsPDF();
-    
-    // Add title
-    doc.setFontSize(18);
-    doc.text("Factory Workers Report", 14, 20);
-    
-    // Define table columns
-    const headers = [["First Name", "Last Name", "Email", "Phone", "NIC", "Age", "Start Date"]];
-    
-    // Prepare table data
-    const data = filteredWorkers.map(worker => [
-      worker.firstName,
-      worker.lastName,
-      worker.email,
-      worker.phoneNumber,
-      worker.nic,
-      worker.age,
-      new Date(worker.jobStartDate).toLocaleDateString()
-    ]);
-
-    // Use autoTable for better table formatting
-    doc.autoTable({
-      head: headers,
-      body: data,
-      startY: 30,
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 2 },
-      columnStyles: {
-        0: { cellWidth: 25 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 40 },
-        3: { cellWidth: 30 },
-        4: { cellWidth: 30 },
-        5: { cellWidth: 15 },
-        6: { cellWidth: 25 }
+    try {
+      console.log("Attempting to generate PDF with workers:", filteredWorkers);
+      if (!filteredWorkers || filteredWorkers.length === 0) {
+        console.warn("No workers available to generate a report.");
+        alert("No workers available to generate a report.");
+        return;
       }
-    });
 
-    // Save the PDF
-    doc.save("factory_workers_report.pdf");
+      const doc = new jsPDF();
+      console.log("jsPDF initialized successfully");
+
+      // Explicitly apply the autoTable plugin
+      autoTable(doc, {
+        // Empty call to ensure plugin is registered
+      });
+
+      if (!doc.autoTable) {
+        throw new Error("autoTable plugin is not loaded correctly.");
+      }
+
+      doc.setFontSize(18);
+      doc.text("Factory Workers Report", 14, 20);
+
+      const headers = [["First Name", "Last Name", "Email", "Phone", "NIC", "Age", "Start Date"]];
+      const data = filteredWorkers.map((worker, index) => {
+        console.log(`Processing worker ${index + 1}:`, worker);
+        return [
+          worker.firstName || "",
+          worker.lastName || "",
+          worker.email || "",
+          worker.phoneNumber || "",
+          worker.nic || "",
+          worker.age || "",
+          worker.jobStartDate ? new Date(worker.jobStartDate).toLocaleDateString() : "",
+        ];
+      });
+
+      console.log("Table data prepared:", data);
+
+      doc.autoTable({
+        head: headers,
+        body: data,
+        startY: 30,
+        theme: "grid",
+        styles: { fontSize: 8, cellPadding: 2 },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 40 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 30 },
+          5: { cellWidth: 15 },
+          6: { cellWidth: 25 },
+        },
+      });
+
+      console.log("Table added to PDF, saving...");
+      doc.save("factory_workers_report.pdf");
+    } catch (err) {
+      console.error("Error generating PDF:", err.message, err.stack);
+      alert("Failed to generate PDF: " + err.message);
+    }
   };
 
   if (loading) {
@@ -193,8 +212,8 @@ function Factoryworkers() {
             placeholder="Search by name, email, or NIC..."
             className="border rounded px-3 py-2 text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <Link 
-            to="/register" 
+          <Link
+            to="/register"
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md whitespace-nowrap"
           >
             Add New Worker
@@ -217,25 +236,46 @@ function Factoryworkers() {
           <table className="min-w-full w-full table-auto divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]"
+                >
                   Employee
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]"
+                >
                   Email
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]"
+                >
                   Phone
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]"
+                >
                   NIC
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]"
+                >
                   Age
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]"
+                >
                   Start Date
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]"
+                >
                   Actions
                 </th>
               </tr>
@@ -332,40 +372,40 @@ function Factoryworkers() {
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           {worker.imageUrl ? (
-                            <img 
-                              src={worker.imageUrl} 
-                              alt={`${worker.firstName} ${worker.lastName}`}
+                            <img
+                              src={worker.imageUrl}
+                              alt={`${worker.firstName || "Unknown"} ${worker.lastName || "Worker"}`}
                               className="flex-shrink-0 h-12 w-12 rounded-full"
                             />
                           ) : (
                             <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
                               <span className="text-gray-500 text-base font-medium">
-                                {worker.firstName.charAt(0)}{worker.lastName.charAt(0)}
+                                {worker.firstName?.charAt(0) || ""}{worker.lastName?.charAt(0) || ""}
                               </span>
                             </div>
                           )}
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900 break-words">
-                              {worker.firstName} {worker.lastName}
+                              {worker.firstName || "N/A"} {worker.lastName || "N/A"}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 break-words">{worker.email}</div>
+                        <div className="text-sm text-gray-900 break-words">{worker.email || "N/A"}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 break-words">{worker.phoneNumber}</div>
+                        <div className="text-sm text-gray-900 break-words">{worker.phoneNumber || "N/A"}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 break-words">{worker.nic}</div>
+                        <div className="text-sm text-gray-900 break-words">{worker.nic || "N/A"}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{worker.age}</div>
+                        <div className="text-sm text-gray-900">{worker.age || "N/A"}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900">
-                          {new Date(worker.jobStartDate).toLocaleDateString()}
+                          {worker.jobStartDate ? new Date(worker.jobStartDate).toLocaleDateString() : "N/A"}
                         </div>
                       </td>
                       <td className="px-6 py-4 space-x-2">
