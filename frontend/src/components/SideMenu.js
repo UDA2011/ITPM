@@ -3,9 +3,12 @@ import { Link, useLocation } from "react-router-dom";
 
 function SideMenu() {
   const localStorageData = JSON.parse(localStorage.getItem("user")) || {};
-  const location = useLocation();
-  const jobPosition = localStorageData.jobPosition;
 
+
+  const location = useLocation(); // To track the active route
+  const jobPosition = localStorageData.jobPosition; // Get user's job position
+
+  // Define menu items visibility based on job position
   const isManager = jobPosition === "Manager";
   const isFactoryWorker = jobPosition === "Factory Worker";
 
@@ -13,7 +16,9 @@ function SideMenu() {
     <div className="h-full flex-col justify-between bg-gradient-to-b from-blue-50 to-white shadow-lg hidden lg:flex w-64">
       <div className="px-4 py-6">
         <nav aria-label="Main Nav" className="mt-6 flex flex-col space-y-2">
-          {/* Dashboard */}
+
+          {/* Dashboard Link - Accessible to both roles */}
+
           <Link
             to="/"
             className={`flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 transition-all duration-300 ${
@@ -55,7 +60,14 @@ function SideMenu() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+
                 </svg>
               </summary>
               <div className="ml-8 mt-2 space-y-1 animate-slide-down">
@@ -83,7 +95,9 @@ function SideMenu() {
             </details>
           )}
 
-          {/* Supplier - Only for Managers */}
+
+          {/* Supplier Link - Only for Managers */}
+
           {isManager && (
             <Link
               to="/supplies"
@@ -127,7 +141,15 @@ function SideMenu() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+
+
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+
                 </svg>
               </summary>
               <div className="ml-8 mt-2 space-y-1 animate-slide-down">
@@ -155,7 +177,10 @@ function SideMenu() {
             </details>
           )}
 
-          {/* Task - For both roles */}
+
+
+          {/* Task Link - Accessible to both Factory Workers and Managers */}
+
           {(isFactoryWorker || isManager) && (
             <Link
               to="/taskhome"
