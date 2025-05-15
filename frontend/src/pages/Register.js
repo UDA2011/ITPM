@@ -20,58 +20,69 @@ function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  // Validate phone number: accepts 9 digits (e.g., 712345678) as per form input
   const validatePhoneNumber = (phoneNumber) => {
     const cleaned = phoneNumber.replace(/\D/g, '');
-    
-    // Accepts:
-    // - 10 digits starting with 0 (0712345678)
-    // - 9 digits after country code (712345678)
-    return /^(0\d{9}|[1-9]\d{8})$/.test(cleaned);
+    return /^[1-9]\d{8}$/.test(cleaned); // 9 digits, no leading 0
   };
+
+  // Validate NIC: 9 digits + V/X or 12 digits
   const validateNIC = (nic) => {
     return /^\d{9}[VvXx]$|^\d{12}$/.test(nic);
   };
 
+  // Validate email format
   const validateEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  // Handle input changes with phone number cleaning
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name === "phoneNumber") {
       const cleanedValue = value.replace(/[^0-9]/g, '');
       setForm({ ...form, [name]: cleanedValue });
       return;
     }
-    
+
     if (name === "age" && Number(value) < 0) return;
-    
+
     setForm({ ...form, [name]: value });
   };
 
+  // Format date for backend (convert to YYYY-MM-DD)
   const formatDateForBackend = (dateString) => {
     if (!dateString) return "";
-    
-    // Handle both MM/DD/YYYY and YYYY-MM-DD formats
+
     const parts = dateString.split(/[/-]/);
     if (parts.length === 3) {
-      if (parts[0].length === 4) { // YYYY-MM-DD format
-        return dateString;
-      } else { // MM/DD/YYYY format
-        return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+      if (parts[0].length === 4) {
+        return dateString; // Already in YYYY-MM-DD
+      } else {
+        return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`; // Convert MM/DD/YYYY to YYYY-MM-DD
       }
     }
     return dateString;
   };
 
+  // Register user function with improved validation and error handling
   const registerUser = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Validate all fields
-    if (!form.firstName || !form.lastName || !form.email || !form.password || 
-        !form.phoneNumber || !form.nic || !form.jobPosition || !form.age || !form.jobStartDate) {
+    // Validate all required fields
+    if (
+      !form.firstName ||
+      !form.lastName ||
+      !form.email ||
+      !form.password ||
+      !form.phoneNumber ||
+      !form.nic ||
+      !form.jobPosition ||
+      !form.age ||
+      !form.jobStartDate
+    ) {
       setError("All required fields must be provided");
       return;
     }
@@ -82,7 +93,7 @@ function Register() {
     }
 
     if (!validatePhoneNumber(form.phoneNumber)) {
-      setError("Please enter a valid 10-digit Sri Lankan phone number starting with 0 (e.g., 0712345678)");
+      setError("Please enter a valid 9-digit Sri Lankan phone number (e.g., 712345678)");
       return;
     }
 
@@ -101,22 +112,28 @@ function Register() {
       return;
     }
 
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const formattedDate = formatDateForBackend(form.jobStartDate);
-      
+
+      // Prepare payload, add leading 0 to phone number for backend compatibility
       const payload = {
         firstName: form.firstName,
         lastName: form.lastName,
-        email: form.email.toLowerCase(), // normalize email
+        email: form.email.toLowerCase(),
         password: form.password,
-        phoneNumber: form.phoneNumber, // send as string
+        phoneNumber: form.phoneNumber.startsWith("0") ? form.phoneNumber : `0${form.phoneNumber}`, // Add leading 0 if missing
         nic: form.nic,
         jobPosition: form.jobPosition,
-        age: Number(form.age), // ensure age is number
+        age: Number(form.age),
         jobStartDate: formattedDate,
-        imageUrl: form.imageUrl
+        imageUrl: form.imageUrl,
       };
 
       console.log("Sending payload:", payload);
@@ -130,11 +147,13 @@ function Register() {
       });
 
       const data = await response.json();
-      console.log("Response:", data);
+      console.log("Response Status:", response.status);
+      console.log("Response Data:", data);
 
       if (!response.ok) {
-        const errorMsg = data.message || 
-                       (data.errors ? JSON.stringify(data.errors) : "Registration failed");
+        const errorMsg =
+          data.message ||
+          (data.errors ? JSON.stringify(data.errors) : "Registration failed");
         throw new Error(errorMsg);
       }
 
@@ -148,6 +167,7 @@ function Register() {
     }
   };
 
+  // Image upload function using Cloudinary
   const uploadImage = async (image) => {
     const data = new FormData();
     data.append("file", image);
@@ -175,12 +195,21 @@ function Register() {
     <div className="grid grid-cols-1 sm:grid-cols-2 h-screen items-center justify-center">
       <div className="w-full max-w-md space-y-8 p-10 bg-white rounded-xl shadow-lg">
         <div className="text-center mb-6">
-          <img className="mx-auto h-16 w-auto" src={require("../assets/logo.png")} alt="Your Company" />
-          <h2 className="mt-4 text-2xl font-semibold text-gray-800">Employee Registration</h2>
+          <img
+            className="mx-auto h-16 w-auto"
+            src={require("../assets/logo.png")}
+            alt="Your Company"
+          />
+          <h2 className="mt-4 text-2xl font-semibold text-gray-800">
+            Employee Registration
+          </h2>
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
             <span className="block sm:inline">{error}</span>
           </div>
         )}
@@ -188,7 +217,12 @@ function Register() {
         <form className="mt-8 space-y-6" onSubmit={registerUser}>
           <div className="flex flex-col gap-6">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                First Name
+              </label>
               <input
                 id="firstName"
                 name="firstName"
@@ -202,7 +236,12 @@ function Register() {
             </div>
 
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Last Name
+              </label>
               <input
                 id="lastName"
                 name="lastName"
@@ -216,7 +255,12 @@ function Register() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Email
+              </label>
               <input
                 id="email"
                 name="email"
@@ -230,7 +274,12 @@ function Register() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
@@ -245,7 +294,12 @@ function Register() {
             </div>
 
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Phone Number</label>
+              <label
+                htmlFor="phoneNumber"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Phone Number
+              </label>
               <div className="mt-1 flex rounded-md shadow-sm">
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                   +94
@@ -268,7 +322,12 @@ function Register() {
             </div>
 
             <div>
-              <label htmlFor="nic" className="block text-sm font-medium text-gray-700">NIC</label>
+              <label
+                htmlFor="nic"
+                className="block text-sm font-medium text-gray-700"
+              >
+                NIC
+              </label>
               <input
                 id="nic"
                 name="nic"
@@ -282,7 +341,12 @@ function Register() {
             </div>
 
             <div>
-              <label htmlFor="jobPosition" className="block text-sm font-medium text-gray-700">Job Position</label>
+              <label
+                htmlFor="jobPosition"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Job Position
+              </label>
               <select
                 id="jobPosition"
                 name="jobPosition"
@@ -297,7 +361,12 @@ function Register() {
             </div>
 
             <div>
-              <label htmlFor="age" className="block text-sm font-medium text-gray-700">Age</label>
+              <label
+                htmlFor="age"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Age
+              </label>
               <input
                 id="age"
                 name="age"
@@ -313,7 +382,12 @@ function Register() {
             </div>
 
             <div>
-              <label htmlFor="jobStartDate" className="block text-sm font-medium text-gray-700">Job Start Date</label>
+              <label
+                htmlFor="jobStartDate"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Job Start Date
+              </label>
               <input
                 id="jobStartDate"
                 name="jobStartDate"
@@ -328,7 +402,9 @@ function Register() {
             <UploadImage uploadImage={uploadImage} />
             {form.imageUrl && (
               <div className="flex items-center">
-                <span className="text-green-600 text-sm">✓ Image uploaded successfully</span>
+                <span className="text-green-600 text-sm">
+                  ✓ Image uploaded successfully
+                </span>
               </div>
             )}
           </div>
@@ -343,13 +419,31 @@ function Register() {
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Processing...
                 </>
-              ) : "Sign up"}
+              ) : (
+                "Sign up"
+              )}
             </button>
           </div>
         </form>

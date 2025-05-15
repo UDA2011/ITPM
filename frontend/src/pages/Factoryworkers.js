@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import "jspdf-autotable"; // Optional: for better table formatting
 
 function Factoryworkers() {
   const [workers, setWorkers] = useState([]);
+  const [filteredWorkers, setFilteredWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState(null);
@@ -15,6 +18,7 @@ function Factoryworkers() {
     age: "",
     jobStartDate: ""
   });
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,11 +37,29 @@ function Factoryworkers() {
       // Filter users with jobPosition "Factory Worker"
       const workerUsers = data.filter(user => user.jobPosition === "Factory Worker");
       setWorkers(workerUsers);
+      setFilteredWorkers(workerUsers); // Initialize filtered list
     } catch (err) {
       console.error("Error fetching workers:", err);
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle search input change
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.trim() === "") {
+      setFilteredWorkers(workers); // Show all workers if search is empty
+    } else {
+      const filtered = workers.filter((worker) =>
+        `${worker.firstName} ${worker.lastName}`.toLowerCase().includes(query.toLowerCase()) ||
+        worker.email.toLowerCase().includes(query.toLowerCase()) ||
+        worker.nic.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredWorkers(filtered);
     }
   };
 
@@ -107,6 +129,50 @@ function Factoryworkers() {
     setEditingId(null);
   };
 
+  // Generate PDF report
+  const generateReport = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Factory Workers Report", 14, 20);
+    
+    // Define table columns
+    const headers = [["First Name", "Last Name", "Email", "Phone", "NIC", "Age", "Start Date"]];
+    
+    // Prepare table data
+    const data = filteredWorkers.map(worker => [
+      worker.firstName,
+      worker.lastName,
+      worker.email,
+      worker.phoneNumber,
+      worker.nic,
+      worker.age,
+      new Date(worker.jobStartDate).toLocaleDateString()
+    ]);
+
+    // Use autoTable for better table formatting
+    doc.autoTable({
+      head: headers,
+      body: data,
+      startY: 30,
+      theme: "grid",
+      styles: { fontSize: 8, cellPadding: 2 },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 30 },
+        4: { cellWidth: 30 },
+        5: { cellWidth: 15 },
+        6: { cellWidth: 25 }
+      }
+    });
+
+    // Save the PDF
+    doc.save("factory_workers_report.pdf");
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading workers...</div>;
   }
@@ -119,17 +185,32 @@ function Factoryworkers() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Factory Workers</h1>
-        <Link 
-          to="/register" 
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md whitespace-nowrap"
-        >
-          Add New Worker
-        </Link>
+        <div className="flex items-center gap-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={handleSearch}
+            placeholder="Search by name, email, or NIC..."
+            className="border rounded px-3 py-2 text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <Link 
+            to="/register" 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md whitespace-nowrap"
+          >
+            Add New Worker
+          </Link>
+          <button
+            onClick={generateReport}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md whitespace-nowrap"
+          >
+            Generate PDF Report
+          </button>
+        </div>
       </div>
 
-      {workers.length === 0 ? (
+      {filteredWorkers.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500">No workers found</p>
+          <p className="text-gray-500">{searchQuery ? "No workers match your search" : "No workers found"}</p>
         </div>
       ) : (
         <div className="rounded-lg border border-gray-200 shadow-sm">
@@ -160,7 +241,7 @@ function Factoryworkers() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {workers.map((worker) => (
+              {filteredWorkers.map((worker) => (
                 <tr key={worker._id} className="hover:bg-gray-50">
                   {editingId === worker._id ? (
                     <>

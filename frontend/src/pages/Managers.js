@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import "jspdf-autotable"; // Optional: for better table formatting
 
 function Managers() {
   const [managers, setManagers] = useState([]);
@@ -127,6 +129,50 @@ function Managers() {
     setEditingId(null);
   };
 
+  // Generate PDF report
+  const generateReport = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Managers Report", 14, 20);
+    
+    // Define table columns
+    const headers = [["First Name", "Last Name", "Email", "Phone", "NIC", "Age", "Start Date"]];
+    
+    // Prepare table data
+    const data = filteredManagers.map(manager => [
+      manager.firstName,
+      manager.lastName,
+      manager.email,
+      manager.phoneNumber,
+      manager.nic,
+      manager.age,
+      new Date(manager.jobStartDate).toLocaleDateString()
+    ]);
+
+    // Use autoTable for better table formatting
+    doc.autoTable({
+      head: headers,
+      body: data,
+      startY: 30,
+      theme: "grid",
+      styles: { fontSize: 8, cellPadding: 2 },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 30 },
+        4: { cellWidth: 30 },
+        5: { cellWidth: 15 },
+        6: { cellWidth: 25 }
+      }
+    });
+
+    // Save the PDF
+    doc.save("managers_report.pdf");
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading managers...</div>;
   }
@@ -153,6 +199,12 @@ function Managers() {
           >
             Add New Manager
           </Link>
+          <button
+            onClick={generateReport}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md whitespace-nowrap"
+          >
+            Generate PDF Report
+          </button>
         </div>
       </div>
 
