@@ -32,7 +32,7 @@ const TasksSingleCard = ({ task }) => {
   return (
     <div
       key={task.taskNo}
-      className='bg-wwhite border-2 border-gray-500 rounded-lg px-4 py-2 relative hover:shadow-xl'
+      className='bg-wwhite border-2 border-gray-500 rounded-lg px-4 py-2 relative hover:shadow-xl w-[150px]'
     >
       {/* Priority Button */}
       <h2 className={`absolute top-1 right-2 px-4 py-1 rounded-lg ${priorityButtonColors[task.priority]}`}>

@@ -5,7 +5,7 @@ const SearchBar = ({ searchQuery, setSearchQuery }) => {
     <div className='my-4'>
       <input
         type='text'
-        className='w-full p-2 border border-gray-300 rounded-lg'
+        className='w-4xl'
         placeholder='Search tasks...'
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}

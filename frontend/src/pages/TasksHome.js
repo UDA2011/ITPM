@@ -25,18 +25,15 @@ const TasksHome = () => {
         const fetchTasks = async () => {
             try {
                 setLoading(true);
-                console.log("Fetching tasks..."); // Debug log
                 const response = await axios.get('http://localhost:4000/api/task');
-                console.log("Tasks response:", response.data); // Debug log
                 setTasks(response.data?.tasks || response.data?.data || []);
             } catch (err) {
-                console.error('Error fetching tasks:', err.response?.data || err.message);
                 setError(err.response?.data?.message || 'Failed to load tasks');
             } finally {
                 setLoading(false);
             }
         };
-    
+
         fetchTasks();
     }, []);
 
@@ -47,6 +44,7 @@ const TasksHome = () => {
         task.category?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // Calculating Task Stats
     const incompleteTasks = tasks.filter(task => !task.isCompleted).length;
     const overdueTasks = tasks.filter(task =>
         task.dueDate && new Date(task.dueDate) < new Date() && !task.isCompleted
@@ -147,19 +145,23 @@ const TasksHome = () => {
             {/* Task Summary Links */}
             <div className='flex justify-between mb-6'>
                 <Link to='/tasks/IncompleteTasks' className='flex-1 mx-2 text-center bg-purple-300 hover:bg-purple-400 p-3 rounded-lg shadow'>
-                    Incomplete Tasks: {incompleteTasks}
+                    Incomplete Tasks: <span className='font-bold'>{incompleteTasks}</span>
                 </Link>
                 <Link to='/tasks/OverdueTasks' className='flex-1 mx-2 text-center bg-red-200 hover:bg-red-300 p-3 rounded-lg shadow'>
-                    Overdue Tasks: {overdueTasks}
+                    Overdue Tasks: <span className='font-bold'>{overdueTasks}</span>
                 </Link>
                 <Link to='/tasks/UrgentTasks' className='flex-1 mx-2 text-center bg-yellow-200 hover:bg-yellow-300 p-3 rounded-lg shadow'>
-                    Urgent Tasks: {urgentTasks}
+                    Urgent Tasks: <span className='font-bold'>{urgentTasks}</span>
                 </Link>
             </div>
 
             {/* Search & Action Buttons */}
             <div className='flex justify-between items-center mb-6'>
-                <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                <SearchBar 
+                    searchQuery={searchQuery} 
+                    setSearchQuery={setSearchQuery} 
+                    className="w-4xl" 
+                />
                 <div className='flex gap-4'>
                     <Link to='/tasks/create' className='flex items-center bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-lg'>
                         <MdOutlineAddBox className='mr-2' /> Create Task

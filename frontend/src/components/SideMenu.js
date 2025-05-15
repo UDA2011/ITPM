@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 
 function SideMenu() {
   const localStorageData = JSON.parse(localStorage.getItem("user")) || {};
+  const location = useLocation(); // To track the active route
 
 
   const location = useLocation(); // To track the active route
@@ -19,6 +20,7 @@ function SideMenu() {
 
           {/* Dashboard Link - Accessible to both roles */}
 
+
           <Link
             to="/"
             className={`flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 transition-all duration-300 ${
@@ -31,9 +33,11 @@ function SideMenu() {
               alt="dashboard-icon"
               src={require("../assets/dashboard-icon.png")}
               className="h-12 w-12 transform group-hover:scale-110 transition-transform"
+
             />
             <span className="text-base font-medium">Dashboard</span>
           </Link>
+
 
           {/* Inventory Dropdown - Only for Managers */}
           {isManager && (
@@ -124,6 +128,7 @@ function SideMenu() {
                   location.pathname.includes("/Employee")
                     ? "bg-blue-100 text-blue-600 font-semibold"
                     : "hover:bg-blue-100 hover:text-blue-600"
+
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -208,6 +213,7 @@ function SideMenu() {
             <img
               alt="Profile"
               src={localStorageData.imageUrl}
+
               className="h-14 w-14 rounded-full object-cover border-2 border-blue-200"
             />
             <div className="flex-1">
@@ -215,6 +221,7 @@ function SideMenu() {
                 {localStorageData.firstName} {localStorageData.lastName}
               </p>
               <p className="text-sm text-gray-500 truncate">{localStorageData.email}</p>
+
             </div>
           </div>
         </div>
