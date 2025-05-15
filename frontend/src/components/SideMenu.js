@@ -155,7 +155,7 @@ function SideMenu() {
             </div>
           </details>
 
-          {/* Task Link */}
+          {/* Task Link - Fixed merge conflict */}
           <Link
             to="/taskhome"
             className={`flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 transition-all duration-300 ${
