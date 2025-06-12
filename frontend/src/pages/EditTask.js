@@ -8,7 +8,7 @@ const EditTask = () => {
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('Low');
-  const [category, setCategory] = useState('Stock counting'); // fixed default here
+  const [category, setCategory] = useState('Stock counting');
   const [tags, setTags] = useState([]);
   const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ const EditTask = () => {
         const formattedDate = new Date(task.dueDate).toISOString().split('T')[0];
         setDueDate(formattedDate);
         setPriority(task.priority);
-        setCategory(task.category || 'Stock counting'); // fallback to valid default
+        setCategory(task.category || 'Stock counting');
         setTags(task.tags || []);
         setIsCompleted(task.isCompleted);
         setLoading(false);
@@ -59,7 +59,6 @@ const EditTask = () => {
 
     if (!priority) errors.priority = 'Priority is required';
 
-    // Optional: limit tags count here if needed
     if (tags.length > 5) errors.tags = 'Cannot have more than 5 tags';
 
     return errors;
@@ -101,121 +100,124 @@ const EditTask = () => {
   };
 
   return (
-    <div className="p-4 bg-green-200 min-h-screen w-[800px]">
-      <h1 className="text-3xl my-4 text-center font-serif">Edit Task</h1>
+    <div className="min-h-screen bg-gradient-to-br from-green-100 to-green-300 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8 transform transition-all duration-300 hover:shadow-2xl">
+        <h1 className="text-3xl font-bold text-center text-green-800 mb-6 font-sans">Edit Task</h1>
 
-      {loading ? (
-        <p className="text-center text-lg font-semibold">Loading...</p>
-      ) : (
-        <div className="bg-white flex flex-col border-2 border-green-700 rounded-xl w-full max-w-2xl p-6 mx-auto">
-          {/* Title */}
-          <div className="my-4">
-            <label className="text-xl font-semibold text-gray-700">Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
-            />
-            {formErrors.title && <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>}
-          </div>
+        {loading ? (
+          <p className="text-center text-lg font-medium text-gray-600">Loading...</p>
+        ) : (
+          <div className="space-y-6">
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
+                placeholder="Enter task title"
+              />
+              {formErrors.title && <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>}
+            </div>
 
-          {/* Description */}
-          <div className="my-4">
-            <label className="text-xl font-semibold text-gray-700">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="border-2 border-green-700 px-4 py-2 w-full rounded-md h-28 resize-none"
-            />
-            {formErrors.description && <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>}
-          </div>
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200 resize-none"
+                rows="4"
+                placeholder="Enter task description"
+              />
+              {formErrors.description && <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>}
+            </div>
 
-          {/* Due Date */}
-          <div className="my-4">
-            <label className="text-xl font-semibold text-gray-700">Due Date</label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
-            />
-            {formErrors.dueDate && <p className="text-red-500 text-sm mt-1">{formErrors.dueDate}</p>}
-          </div>
+            {/* Due Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
+              />
+              {formErrors.dueDate && <p className="text-red-500 text-sm mt-1">{formErrors.dueDate}</p>}
+            </div>
 
-          {/* Priority */}
-          <div className="my-4">
-            <label className="text-xl font-semibold text-gray-700">Priority</label>
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
-            >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-              <option value="Urgent">Urgent</option>
-            </select>
-            {formErrors.priority && <p className="text-red-500 text-sm mt-1">{formErrors.priority}</p>}
-          </div>
+            {/* Priority */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Urgent">Urgent</option>
+              </select>
+              {formErrors.priority && <p className="text-red-500 text-sm mt-1">{formErrors.priority}</p>}
+            </div>
 
-          {/* Category */}
-          <div className="my-4">
-            <label className="text-xl font-semibold text-gray-700">Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
-            >
-              <option value="Stock counting">Stock counting</option>
-              <option value="Packaging and labeling">Packaging and labeling</option>
-              <option value="Sample collection for testing">Sample collection for testing</option>
-              <option value="Facility checks">Facility checks</option>
-              <option value="Data entry">Data entry</option>
-              <option value="Training attendance">Training attendance</option>
-            </select>
-          </div>
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
+              >
+                <option value="Stock counting">Stock counting</option>
+                <option value="Packaging and labeling">Packaging and labeling</option>
+                <option value="Sample collection for testing">Sample collection for testing</option>
+                <option value="Facility checks">Facility checks</option>
+                <option value="Data entry">Data entry</option>
+                <option value="Training attendance">Training attendance</option>
+              </select>
+            </div>
 
-          {/* Tags */}
-          <div className="my-4">
-            <label className="text-xl font-semibold text-gray-700">Tags (comma separated)</label>
-            <input
-              type="text"
-              value={tags.join(', ')}
-              onChange={(e) => setTags(e.target.value.split(',').map(t => t.trim()).filter(t => t))}
-              className="border-2 border-green-700 px-4 py-2 w-full rounded-md"
-              placeholder="tag1, tag2, tag3"
-            />
-            {formErrors.tags && <p className="text-red-500 text-sm mt-1">{formErrors.tags}</p>}
-          </div>
+            {/* Tags */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
+              <input
+                type="text"
+                value={tags.join(', ')}
+                onChange={(e) => setTags(e.target.value.split(',').map(t => t.trim()).filter(t => t))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
+                placeholder="e.g., urgent, work, personal"
+              />
+              {formErrors.tags && <p className="text-red-500 text-sm mt-1">{formErrors.tags}</p>}
+            </div>
 
-          {/* Completed checkbox */}
-          <div className="my-4 flex items-center space-x-3">
-            <input
-              type="checkbox"
-              checked={isCompleted}
-              onChange={(e) => setIsCompleted(e.target.checked)}
-              id="completed-checkbox"
-              className="w-5 h-5"
-            />
-            <label htmlFor="completed-checkbox" className="text-lg font-medium text-gray-700 select-none">
-              Mark as Completed
-            </label>
-          </div>
+            {/* Completed checkbox */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={isCompleted}
+                onChange={(e) => setIsCompleted(e.target.checked)}
+                id="completed-checkbox"
+                className="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+              <label htmlFor="completed-checkbox" className="ml-2 text-sm font-medium text-gray-700 select-none">
+                Mark as Completed
+              </label>
+            </div>
 
-          {/* Save button */}
-          <div className="my-6 flex justify-center">
+            {/* Save button */}
             <button
               type="button"
-              className="p-3 bg-green-700 text-white font-bold rounded-lg w-full max-w-xs hover:bg-sky-400 transition-all"
               onClick={handleEditTask}
               disabled={loading}
+              className={`w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {loading ? 'Saving...' : 'Save'}
+              {loading ? 'Saving...' : 'Save Task'}
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
