@@ -1,109 +1,83 @@
 .task-list-page {
-    padding: 20px;
-    margin-left: 250px; /* To account for sidebar */
-  }
-  
-  .task-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .create-btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .task-stats {
+    flex: 1;
+    padding: 24px;
+    min-height: 100vh;
+    background: white !important; /* Force white background */
+    width: 100%; /* Full width within parent */
+}
+
+/* Ensure stats grid uses full width */
+.task-stats {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 15px;
     margin-bottom: 20px;
-  }
-  
-  .stat-card {
+    width: 100%;
+}
+
+/* Ensure stat cards have consistent styling */
+.stat-card {
     background: white;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  
-  .stat-card h3 {
+    min-height: 100px;
+}
+
+.stat-card h3 {
     margin-top: 0;
     font-size: 14px;
     color: #666;
-  }
-  
-  .stat-card p {
+}
+
+.stat-card p {
     margin-bottom: 0;
     font-size: 24px;
     font-weight: bold;
-  }
-  
-  .task-filters {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .task-filters button {
-    padding: 8px 16px;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .task-filters button.active {
-    background: #2196F3;
-    color: white;
-    border-color: #2196F3;
-  }
-  
-  .task-table {
+}
+
+/* Ensure table styling */
+.task-table {
     width: 100%;
     border-collapse: collapse;
-  }
-  
-  .task-table th, .task-table td {
+    background: white;
+}
+
+.task-table th, .task-table td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #ddd;
-  }
-  
-  .task-table th {
+}
+
+.task-table th {
     background-color: #f5f5f5;
     font-weight: bold;
-  }
-  
-  .status-badge {
+}
+
+/* Rest of your existing styles */
+.status-badge {
     padding: 4px 8px;
     border-radius: 12px;
     font-size: 12px;
     font-weight: bold;
-  }
-  
-  .status-badge.pending {
+}
+
+.status-badge.pending {
     background-color: #FFF3CD;
     color: #856404;
-  }
-  
-  .status-badge.in-progress {
+}
+
+.status-badge.in-progress {
     background-color: #CCE5FF;
     color: #004085;
-  }
-  
-  .status-badge.completed {
+}
+
+.status-badge.completed {
     background-color: #D4EDDA;
     color: #155724;
-  }
-  
-  .edit-btn {
+}
+
+.edit-btn {
     background-color: #FFC107;
     color: black;
     border: none;
@@ -111,13 +85,13 @@
     border-radius: 4px;
     margin-right: 5px;
     cursor: pointer;
-  }
-  
-  .delete-btn {
+}
+
+.delete-btn {
     background-color: #DC3545;
     color: white;
     border: none;
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
-  }
+}
