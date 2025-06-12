@@ -13,6 +13,7 @@
   }
 }
 
+/* Scope this to a header component if needed, otherwise comment out */
 .App-header {
   background-color: #282c34;
   min-height: 100vh;

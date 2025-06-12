@@ -9,11 +9,13 @@ function Layout() {
       <div className="md:h-16">
         <Header />
       </div>
-      <div className="grid grid-cols-12 bg-gray-100 items-baseline">
-        <div className="col-span-2 h-screen sticky top-0 hidden lg:flex">
+      <div className="grid grid-cols-12 min-h-[calc(100vh-4rem)] bg-gray-100 items-stretch">
+        <div className="col-span-2 h-screen sticky top-0 hidden lg:flex bg-white">
           <SideMenu />
         </div>
-        <Outlet />
+        <div className="col-span-10 bg-white min-h-full flex flex-col">
+          <Outlet />
+        </div>
       </div>
     </>
   );

@@ -16,7 +16,9 @@ function Suppliers() {
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [updatePage, setUpdatePage] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSuppliers, setIsLoadingSuppliers] = useState(true);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+  const [error, setError] = useState(null);
 
   const authContext = useContext(AuthContext);
 
@@ -25,64 +27,74 @@ function Suppliers() {
     fetchRequestsData();
   }, [updatePage]);
 
-  const fetchSuppliersData = () => {
-    fetch("http://localhost:4000/api/suppliers/suppliers")
-      .then((response) => response.json())
-      .then((data) => {
-        setAllSuppliers(data);
-      })
-      .catch((err) => console.log(err));
-  };
-
-  const fetchRequestsData = async () => {
-    setIsLoading(true);
+  const fetchSuppliersData = async () => {
+    setIsLoadingSuppliers(true);
     try {
-      const response = await fetch("http://localhost:4000/api/requests");
+      const response = await fetch("http://localhost:4000/api/suppliers/suppliers");
+      if (!response.ok) throw new Error("Failed to fetch suppliers");
       const data = await response.json();
-      setRequests(data);
+      setAllSuppliers(data);
     } catch (err) {
-      console.error('Error fetching requests:', err);
+      console.error("Error fetching suppliers:", err);
+      setError("Failed to load suppliers. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsLoadingSuppliers(false);
     }
   };
 
-  const deleteSupplier = (id) => {
+  const fetchRequestsData = async () => {
+    setIsLoadingRequests(true);
+    try {
+      const response = await fetch("http://localhost:4000/api/requests");
+      if (!response.ok) throw new Error("Failed to fetch requests");
+      const data = await response.json();
+      setRequests(data);
+    } catch (err) {
+      console.error("Error fetching requests:", err);
+      setError("Failed to load requests. Please try again.");
+    } finally {
+      setIsLoadingRequests(false);
+    }
+  };
+
+  const deleteSupplier = async (id) => {
     if (window.confirm("Are you sure you want to delete this supplier?")) {
-      fetch(`http://localhost:4000/api/suppliers/suppliers/${id}`, {
-        method: "DELETE",
-      })
-        .then((response) => {
-          if (!response.ok) throw new Error("Failed to delete supplier");
-          return response.json();
-        })
-        .then(() => {
-          alert("Supplier deleted successfully!");
-          handlePageUpdate();
-        })
-        .catch((err) => {
-          console.error("Error deleting supplier:", err);
-          alert("Failed to delete supplier. Please try again.");
+      try {
+        const response = await fetch(`http://localhost:4000/api/suppliers/suppliers/${id}`, {
+          method: "DELETE",
         });
+        if (!response.ok) throw new Error("Failed to delete supplier");
+        alert("Supplier deleted successfully!");
+        handlePageUpdate();
+      } catch (err) {
+        console.error("Error deleting supplier:", err);
+        alert("Failed to delete supplier. Please try again.");
+      }
     }
   };
 
   const deleteRequest = async (id) => {
     if (window.confirm("Are you sure you want to delete this request?")) {
       try {
-        await fetch(`http://localhost:4000/api/requests/${id}`, {
+        const response = await fetch(`http://localhost:4000/api/requests/${id}`, {
           method: "DELETE",
         });
-        fetchRequestsData(); // Refresh the requests list
+        if (!response.ok) throw new Error("Failed to delete request");
         alert("Request deleted successfully!");
-      } catch (error) {
-        console.error('Error deleting request:', error);
+        fetchRequestsData();
+      } catch (err) {
+        console.error("Error deleting request:", err);
         alert("Failed to delete request. Please try again.");
       }
     }
   };
 
   const openEditModal = (supplier) => {
+    if (!supplier || !supplier._id) {
+      console.error("Invalid supplier data:", supplier);
+      alert("Cannot edit supplier: Invalid data.");
+      return;
+    }
     setSelectedSupplier(supplier);
     setShowEditSupplierModal(true);
   };
@@ -92,32 +104,24 @@ function Suppliers() {
     setShowViewRequestModal(true);
   };
 
-  const addSupplierModalSetting = () => {
-    setShowSupplierModal(!showSupplierModal);
+  const addSupplierModalSetting = () => setShowSupplierModal(!showSupplierModal);
+  const editSupplierModalSetting = () => {
+    setShowEditSupplierModal(false);
+    setSelectedSupplier(null);
   };
-
-  const sendRequestModalSetting = () => {
-    setShowSendRequestModal(!showSendRequestModal);
-  };
-
+  const sendRequestModalSetting = () => setShowSendRequestModal(!showSendRequestModal);
   const viewRequestModalSetting = () => {
     setShowViewRequestModal(!showViewRequestModal);
+    setSelectedRequest(null);
   };
-
-  const selectedSupplierModalSetting = () => {
-    setShowSelectedSupplierModal(!showSelectedSupplierModal);
-  };
-
-  const handlePageUpdate = () => {
-    setUpdatePage(!updatePage);
-  };
+  const selectedSupplierModalSetting = () => setShowSelectedSupplierModal(!showSelectedSupplierModal);
+  const handlePageUpdate = () => setUpdatePage(!updatePage);
 
   const formatMaterials = (materials) => {
-    if (!materials || materials.length === 0) return "N/A";
-    
+    if (!materials || materials.length === 0) return <span className="text-gray-500">N/A</span>;
     return materials.map((material, index) => (
-      <div key={index} className="mb-2 last:mb-0">
-        <span className="font-semibold text-gray-800">{material.name}</span>
+      <div key={index} className="mb-2">
+        <span className="font-medium text-gray-800">{material.name}</span>
         <div className="text-sm text-gray-600">
           {material.availableQuantity} {material.unit} at ${material.cost.toFixed(2)}/{material.unit}
         </div>
@@ -125,134 +129,231 @@ function Suppliers() {
     ));
   };
 
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="bg-red-100 text-red-700 p-4 rounded-lg shadow-md">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="col-span-12 lg:col-span-10 flex justify-center">
-      <div className="flex flex-col gap-5 w-full max-w-screen-xl">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Suppliers Dashboard</h1>
+          <div className="flex space-x-3">
+            <button
+              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200"
+              onClick={addSupplierModalSetting}
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Supplier
+            </button>
+            <button
+              className="flex items-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200"
+              onClick={sendRequestModalSetting}
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              Send Request
+            </button>
+            <button
+              className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200"
+              onClick={viewRequestModalSetting}
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              View Requests
+            </button>
+            <button
+              className="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200"
+              onClick={selectedSupplierModalSetting}
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Select Supplier
+            </button>
+          </div>
+        </div>
+
         {/* Modals */}
         {showSupplierModal && (
-          <AddSupplier
-            addSupplierModalSetting={addSupplierModalSetting}
-            handlePageUpdate={handlePageUpdate}
-          />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl transform transition-all duration-300 scale-100">
+              <AddSupplier
+                addSupplierModalSetting={addSupplierModalSetting}
+                handlePageUpdate={handlePageUpdate}
+              />
+            </div>
+          </div>
         )}
 
-        {showEditSupplierModal && (
-          <EditSupplier
-            supplier={selectedSupplier}
-            editSupplierModalSetting={() => setShowEditSupplierModal(false)}
-            handlePageUpdate={handlePageUpdate}
-          />
+        {showEditSupplierModal && selectedSupplier && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl transform transition-all duration-300 scale-100">
+              <EditSupplier
+                supplier={selectedSupplier}
+                editSupplierModalSetting={editSupplierModalSetting}
+                handlePageUpdate={handlePageUpdate}
+              />
+            </div>
+          </div>
         )}
 
         {showSendRequestModal && (
-          <Sendrequest
-            sendRequestModalSetting={sendRequestModalSetting}
-            handlePageUpdate={handlePageUpdate}
-          />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl transform transition-all duration-300 scale-100">
+              <Sendrequest
+                sendRequestModalSetting={sendRequestModalSetting}
+                handlePageUpdate={handlePageUpdate}
+              />
+            </div>
+          </div>
         )}
 
         {showViewRequestModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+            <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl transform transition-all duration-300 scale-100">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">
                   {selectedRequest ? "Request Details" : "All Requests"}
                 </h2>
                 <button
-                  onClick={() => {
-                    setShowViewRequestModal(false);
-                    setSelectedRequest(null);
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
+                  onClick={viewRequestModalSetting}
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {selectedRequest ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="font-semibold">Product Name</h3>
-                        <p>{selectedRequest.name}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Current Quantity</h3>
-                        <p>{selectedRequest.currentQty}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Requested Quantity</h3>
-                        <p>{selectedRequest.requestQty}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Status</h3>
-                        <p className={`capitalize ${selectedRequest.status === 'approved' ? 'text-green-600' : 
-                                      selectedRequest.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'}`}>
-                          {selectedRequest.status}
-                        </p>
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="font-semibold text-gray-700">Product Name</h3>
+                      <p className="text-gray-900">{selectedRequest.name}</p>
                     </div>
-                    <div className="flex justify-end space-x-4 pt-4">
+                    <div>
+                      <h3 className="font-semibold text-gray-700">Current Quantity</h3>
+                      <p className="text-gray-900">{selectedRequest.currentQty}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-700">Requested Quantity</h3>
+                      <p className="text-gray-900">{selectedRequest.requestQty}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-700">Status</h3>
+                      <p
+                        className={`capitalize font-medium ${
+                          selectedRequest.status === "approved"
+                            ? "text-green-600"
+                            : selectedRequest.status === "rejected"
+                            ? "text-red-600"
+                            : "text-yellow-600"
+                        }`}
+                      >
+                        {selectedRequest.status}
+                      </p>
+                    </div>
+                    <div className="col-span-2 flex justify-end space-x-4">
                       <button
                         onClick={() => {
                           deleteRequest(selectedRequest._id);
                           setShowViewRequestModal(false);
                         }}
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                        className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200"
                       >
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                         Delete Request
                       </button>
                       <button
-                        onClick={() => setShowViewRequestModal(false)}
-                        className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                        onClick={viewRequestModalSetting}
+                        className="flex items-center bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200"
                       >
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                         Close
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    {isLoading ? (
-                      <div className="flex justify-center items-center py-8">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    {isLoadingRequests ? (
+                      <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600"></div>
                       </div>
                     ) : (
                       <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-100">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Qty</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested Qty</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            {["Product", "Current Qty", "Requested Qty", "Status", "Actions"].map((header) => (
+                              <th
+                                key={header}
+                                className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                              >
+                                {header}
+                              </th>
+                            ))}
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {requests.map((request) => (
-                            <tr key={request._id}>
-                              <td className="px-6 py-4 whitespace-nowrap">{request.name}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{request.currentQty}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{request.requestQty}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                  ${request.status === 'approved' ? 'bg-green-100 text-green-800' : 
-                                    request.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                            <tr key={request._id} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-6 py-4 text-gray-900">{request.name}</td>
+                              <td className="px-6 py-4 text-gray-900">{request.currentQty}</td>
+                              <td className="px-6 py-4 text-gray-900">{request.requestQty}</td>
+                              <td className="px-6 py-4">
+                                <span
+                                  className={`px-3 py-1 text-xs font-medium rounded-full ${
+                                    request.status === "approved"
+                                      ? "bg-green-100 text-green-800"
+                                      : request.status === "rejected"
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-yellow-100 text-yellow-800"
+                                  }`}
+                                >
                                   {request.status}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <td className="px-6 py-4 flex flex-col space-y-2">
                                 <button
                                   onClick={() => viewRequest(request)}
-                                  className="text-blue-600 hover:text-blue-900 mr-4"
+                                  className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-md transition-all duration-200 hover:scale-105"
+                                  aria-label="View request"
                                 >
+                                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
                                   View
                                 </button>
                                 <button
                                   onClick={() => deleteRequest(request._id)}
-                                  className="text-red-600 hover:text-red-900"
+                                  className="flex items-center bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg shadow-md transition-all duration-200 hover:scale-105"
+                                  aria-label="Delete request"
                                 >
+                                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="2"
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                    />
+                                  </svg>
                                   Delete
                                 </button>
                               </td>
@@ -269,117 +370,107 @@ function Suppliers() {
         )}
 
         {showSelectedSupplierModal && (
-          <SelectedSupplier
-            selectedSupplierModalSetting={selectedSupplierModalSetting}
-            handlePageUpdate={handlePageUpdate}
-          />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl transform transition-all duration-300 scale-100">
+              <SelectedSupplier
+                selectedSupplierModalSetting={selectedSupplierModalSetting}
+                handlePageUpdate={handlePageUpdate}
+              />
+            </div>
+          </div>
         )}
 
         {/* Supplier Table */}
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="flex justify-between items-center pt-6 pb-4 px-6 bg-gradient-to-r from-blue-50 to-indigo-50">
-            <div className="flex gap-4 items-center">
-              <span className="text-2xl font-bold text-gray-800">Suppliers</span>
-            </div>
-            <div className="flex gap-3">
-              <button
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-md"
-                onClick={addSupplierModalSetting}
-              >
-                Add Supplier
-              </button>
-              <button
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-md"
-                onClick={sendRequestModalSetting}
-              >
-                Send Request
-              </button>
-              <button
-                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-md"
-                onClick={viewRequestModalSetting}
-              >
-                View Requests
-              </button>
-              <button
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-md"
-                onClick={selectedSupplierModalSetting}
-              >
-                Select Supplier
-              </button>
-            </div>
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <h2 className="text-2xl font-bold text-gray-900">Suppliers</h2>
           </div>
-          <div className="relative overflow-x-auto">
-            <table className="w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  {[
-                    { name: "Name", width: "w-1/6" },
-                    { name: "Materials", width: "w-1/6" },
-                    { name: "Contact", width: "w-1/6" },
-                    { name: "Email", width: "w-2/6" },
-                    { name: "Address", width: "w-2/6" },
-                    { name: "Delivery (Days)", width: "w-1/6" },
-                    { name: "Rating", width: "w-1/6" },
-                    { name: "Actions", width: "w-1/6" },
-                  ].map((header) => (
-                    <th
-                      key={header.name}
-                      className={`px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider ${header.width}`}
-                    >
-                      {header.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {suppliers.map((supplier, index) => (
-                  <tr
-                    key={supplier._id}
-                    className={`hover:bg-gray-50 transition-colors duration-150 ${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-25"
-                    }`}
-                  >
-                    <td className="px-6 py-4 text-gray-900 font-medium">
-                      {supplier.name}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      {formatMaterials(supplier.materials)}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      {supplier.contact}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      {supplier.email}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      {supplier.address}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      {supplier.deliveryTime}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        {supplier.supplierRating}/5
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      <button
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-lg mr-2 transition-all duration-200"
-                        onClick={() => openEditModal(supplier)}
+          <div className="overflow-x-auto">
+            {isLoadingSuppliers ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600"></div>
+              </div>
+            ) : suppliers.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">No suppliers found.</div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-100">
+                  <tr>
+                    {[
+                      "Name",
+                      "Materials",
+                      "Contact",
+                      "Email",
+                      "Address",
+                      "Delivery (Days)",
+                      "Rating",
+                      "Actions",
+                    ].map((header) => (
+                      <th
+                        key={header}
+                        className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                       >
-                        Edit
-                      </button>
-                      <button
-                        className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-3 rounded-lg transition-all duration-200"
-                        onClick={() => deleteSupplier(supplier._id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
+                        {header}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {suppliers.map((supplier, index) => (
+                    <tr
+                      key={supplier._id}
+                      className={`hover:bg-gray-50 transition-colors ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      }`}
+                    >
+                      <td className="px-6 py-4 text-gray-900 font-medium">{supplier.name}</td>
+                      <td className="px-6 py-4">{formatMaterials(supplier.materials)}</td>
+                      <td className="px-6 py-4 text-gray-700">{supplier.contact}</td>
+                      <td className="px-6 py-4 text-gray-700">{supplier.email}</td>
+                      <td className="px-6 py-4 text-gray-700">{supplier.address}</td>
+                      <td className="px-6 py-4 text-gray-700">{supplier.deliveryTime}</td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                          {supplier.supplierRating}/5
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 flex flex-col space-y-2">
+                        <button
+                          className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-md transition-all duration-200 hover:scale-105"
+                          onClick={() => openEditModal(supplier)}
+                          aria-label="Edit supplier"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                          Edit
+                        </button>
+                        <button
+                          className="flex items-center bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg shadow-md transition-all duration-200 hover:scale-105"
+                          onClick={() => deleteSupplier(supplier._id)}
+                          aria-label="Delete supplier"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>

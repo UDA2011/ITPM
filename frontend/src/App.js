@@ -19,7 +19,6 @@ import TaskForm from './components/TaskForm';
 import TaskList from './pages/TaskList';
 import "./index.css";
 
-
 import TasksHome from './pages/TasksHome';
 import ShowTask from './pages/ShowTask';
 import CreateTask from './pages/CreateTask';
@@ -107,7 +106,7 @@ const App = () => {
             <Route path='/tasks/delete/:id' element={<DeleteTask />} />
             <Route path='/tasks/IncompleteTasks' element={<IncompleteTasks />} />
             <Route path='/tasks/OverdueTasks' element={<OverdueTasks />} />
-            <Route path='/tasks/UrgentTasks' element={<UrgentTasks />} />
+            <Route path='/tasks/UrgentTasks' element={<UrgentTasks />} />
           </Route>
           <Route path="*" element={<NoPageFound />} />
         </Routes>
